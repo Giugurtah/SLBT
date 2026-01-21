@@ -41,6 +41,83 @@ class SLBT(BaseSLBT):
         #if changed and self.reporter is not None:
         #    self._rebuild_report()
 
+    def prune_after_vp(self, nodeID):
+        if self.root is None:
+            return
+        
+        # 1. Raccogli tutti i nodi in una lista
+        all_nodes = []
+        self._collect_nodes(self.root, all_nodes)
+        
+        # 2. Ordina per impurity_decrease crescente
+        all_nodes.sort(key=lambda n: n.impurity_decrease)
+        
+        max_iterations = len(all_nodes) * 2  # Limite per evitare loop infiniti
+        iterations = 0
+        changed = True
+
+        while changed and iterations < max_iterations:
+            changed = False
+            iterations += 1
+            for i in range(len(all_nodes)-1):
+                current_node = all_nodes[i]
+                next_node = all_nodes[i+1]
+                if(current_node.impurity_decrease > next_node.impurity_decrease):
+                    all_nodes[i] = next_node
+                    all_nodes[i+1] = current_node
+                    changed = True
+
+        # 3. Cerca nodo di taglio
+        search = True
+
+        virtual_leaves = [self.root]
+        virtual_leaves_set = {self.root}
+
+        reached = False
+        i = 0
+
+        while reached is False:
+            current_node = all_nodes[i]
+
+            if current_node.position != nodeID: 
+                i += 1
+                if current_node in virtual_leaves_set and current_node._is_leaf_node() is False:
+                        virtual_leaves.remove(current_node)
+                        virtual_leaves_set.remove(current_node)
+
+                        virtual_leaves.append(current_node.left)
+                        virtual_leaves_set.add(current_node.left)
+                            
+                        virtual_leaves.append(current_node.right)
+                        virtual_leaves_set.add(current_node.right)
+            else:
+                reached = True
+
+        # 4. Pota i rami in eccesso
+        for node in virtual_leaves:
+            if node._is_leaf_node() is False:
+                node.feature = None
+                node.treshold = None
+                node.left = None
+                node.right = None
+                node.LIFT_1 = None
+                node.LIFT_2 = None
+                node.gpi = None
+                node.ppi = None
+
+                highest_index = 0
+                highest_presence = 0
+                for i in range(len(node.distribution)):
+                    if node.distribution[i] > highest_presence:
+                        highest_presence = node.distribution[i]
+                        highest_index = i
+
+                node.value = node.labels[highest_index]
+                node.GCR = self._get_gcr(node.distribution, node.labels)
+
+        self._rebuild_report()
+        return
+
     #Method to predict the labels of a given dataset
     def predict(self, X):
         predictions = []
@@ -319,47 +396,6 @@ class SLBT(BaseSLBT):
         changed = changed_left or changed_right or changed_here
         return node, changed
 
-    def _prune_after_vp(self):
-        """
-        Calcola tree_partial_impurity_reduction per ogni nodo.
-        
-        Costruisce progressivamente l'insieme delle foglie virtuali:
-        - Parte con la radice come unica foglia virtuale
-        - Ad ogni nodo considerato, se è foglia virtuale:
-        
-        * Lo rimuove dalle foglie virtuali
-        * Aggiunge i suoi figli (se esistono)
-        """
-        if self.root is None:
-            return
-        
-        # 1. Raccogli tutti i nodi in una lista
-        all_nodes = []
-        self._collect_nodes(self.root, all_nodes)
-        
-        # 2. Ordina per impurity_decrease crescente
-        all_nodes.sort(key=lambda n: n.impurity_decrease)
-        
-        # 3. Verifica e correggi l'ordinamento
-        # Un nodo figlio non può mai precedere il suo padre nella lista
-        # perché impurity_decrease è cumulativo dalla radice
-        max_iterations = len(all_nodes) * 2  # Limite per evitare loop infiniti
-        iterations = 0
-        changed = True
-
-        while changed and iterations < max_iterations:
-            changed = False
-            iterations += 1
-            for i in range(len(all_nodes)-1):
-                current_node = all_nodes[i]
-                next_node = all_nodes[i+1]
-                if(current_node.impurity_decrease > next_node.impurity_decrease):
-                    all_nodes[i] = next_node
-                    all_nodes[i+1] = current_node
-                    changed = True
-
-        return
-
     def _calculate_tree_partial_impurity_reduction(self):
         """
         Calcola tree_partial_impurity_reduction per ogni nodo.
@@ -399,7 +435,6 @@ class SLBT(BaseSLBT):
                     all_nodes[i+1] = current_node
                     changed = True
 
-        
         # 5. Variabili per i calcoli
         self.root.tree_partial_impurity_reduction = 0.0
         root_N = self.root.N

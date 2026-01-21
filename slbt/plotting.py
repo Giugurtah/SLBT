@@ -237,7 +237,6 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
     }
     plot_JSON = json.dumps(dataPlot, indent=4)
 
-    # 3) HTML (riuso quasi identico al tuo)
     html_content = f""" 
     <!DOCTYPE html> 
     <html lang="en"> 
