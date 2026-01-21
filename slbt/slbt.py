@@ -399,17 +399,34 @@ class SLBT(BaseSLBT):
                     all_nodes[i+1] = current_node
                     changed = True
 
-        # 4. Inizializza le foglie virtuali con la radice
-        virtual_leaves = [self.root]
-        virtual_leaves_set = {self.root}
         
         # 5. Variabili per i calcoli
+        self.root.tree_partial_impurity_reduction = 0.0
         root_N = self.root.N
         previous_part_imp_red = 0
         search = True
 
+        virtual_leaves = []
+        virtual_leaves_set = {self.root}
+        virtual_leaves_set.remove(self.root)
+
+        virtual_leaves.append(self.root.left)
+        virtual_leaves_set.add(self.root.left)
+                    
+        virtual_leaves.append(self.root.right)
+        virtual_leaves_set.add(self.root.right)
+
         # 6. Processa ogni nodo in ordine
-        for current_node in all_nodes:
+        for current_node in all_nodes[1:]:
+            part_imp_red = 0
+            for leaf in virtual_leaves:
+                    part_imp_red += leaf.impurity_decrease*leaf.N/root_N
+
+            if part_imp_red - previous_part_imp_red <0.01 and search is True:
+                print("suggested trovato in pos: ", current_node.position)
+                current_node.suggested_pruning = True
+                search = False
+
             if current_node in virtual_leaves_set and current_node._is_leaf_node() is False:
                 virtual_leaves.remove(current_node)
                 virtual_leaves_set.remove(current_node)
@@ -417,19 +434,8 @@ class SLBT(BaseSLBT):
                 virtual_leaves.append(current_node.left)
                 virtual_leaves_set.add(current_node.left)
                     
-                
                 virtual_leaves.append(current_node.right)
                 virtual_leaves_set.add(current_node.right)
-
-                part_imp_red = 0.0
-
-                for leaf in virtual_leaves:
-                    part_imp_red += leaf.impurity_decrease*leaf.N/root_N
-
-                if part_imp_red - previous_part_imp_red <0.01 and search is True:
-                    print("suggested trovato in pos: ", current_node.position)
-                    current_node.suggested_pruning = True
-                    search = False
 
                 current_node.tree_partial_impurity_reduction = part_imp_red
                 previous_part_imp_red = part_imp_red

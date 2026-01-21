@@ -1,4 +1,4 @@
-age_at_onset,Diagnostic_delay,MRC_AASS,MRC_AAII,MRC_Bulbare,PUMNS_AASS,PUMNS_AAII,PUMNS_Bulbare,CNS_LS,CUT_OFF_LABILITY_SCALE,disease_duration,rate_of_progression,Esordio_clinico_c,Spirometria,FVC,VENTILAZIONE,Tracheostomia,PEG,familiarita,terapia
+Age_at_onset,Diagnostic_delay,MRC_UL,MRC_LL,MRC_Bulbar,PUMNS_UL,PUMNS_LL,PUMNS_Bulbar,CNS_LS,Cut_off_liability_scale,Disease_duration,Rate_of_progression,Clinical_onset,Spirometry,FVC,VENTILATION,Tracheostomy,PEG,Family_history,Therapy
 5,0,1,1,1,2,1,0,1,0,0,0,spinale,1.0,>80,1,1,0,0,Riluzolo
 5,0,1,1,1,0,2,0,1,0,0,0,spinale,1.0,60-80,1,1,0,0,Riluzolo
 5,0,1,1,1,2,2,0,1,0,0,0,spinale,1.0,40-60,1,1,0,0,Riluzolo

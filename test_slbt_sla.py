@@ -11,12 +11,13 @@ x_s = pd.read_csv('df_sla_x_s.csv').squeeze()
 model = SLBT(max_depth=5, homogeneity="AB")
 model.fit(X, y)
 
-output_file = "non_stratified_tree_vp.html"
+output_file = "non_stratified_tree.html"
 plot_html(
     model,
     output_file=output_file,
-    title="LBT_SLA_VP",
+    title="LBT_ALS_VP",
 )
 
+model.reporter.results.to_csv("non_stratified_tree.csv")
 
 

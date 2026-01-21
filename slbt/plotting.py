@@ -272,6 +272,8 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
             .impurity-label-right.highlighted {{ color: #ffffff; background-color: rgba(74, 144, 226, 0.95); font-weight: bold; z-index: 11;}}
             .suggested-label-left.highlighted {{color: #ffffff; background-color: #e61414; font-weight: bold; z-index: 11;}}
             .suggested-label-right.highlighted {{ color: #ffffff; background-color: #e61414; font-weight: bold; z-index: 11;}}
+            .square.highlighted-branch:after {{background: linear-gradient(to top left, transparent calc(50% - 1px), orange, transparent calc(50% + 1px)) !important;}}
+            .d_l.highlighted-branch:after {{background: linear-gradient(to top right, transparent calc(50% - 1px), orange, transparent calc(50% + 1px)) !important;}}
         </style>
     </head> 
     <body> 
@@ -322,6 +324,9 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                         rbranchElement.style.top = 15 + prev_impurity*h + "%"
                         rbranchElement.style.height = (node.impurity_decrement-prev_impurity)*h + "%"
                         rbranchElement.style.width = d + "%"
+                        rbranchElement.setAttribute("data-node-id", node.position);  
+                        rbranchElement.setAttribute("data-impurity-decrease", node.impurity_decrement);  
+
 
                         tree.appendChild(rbranchElement)
                     }} else {{
@@ -332,6 +337,8 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                         lbranchElement.style.top = 15 + prev_impurity*h + "%"
                         lbranchElement.style.height = (node.impurity_decrement-prev_impurity)*h + "%"
                         lbranchElement.style.width = d + "%"
+                        lbranchElement.setAttribute("data-node-id", node.position);  
+                        lbranchElement.setAttribute("data-impurity-decrease", node.impurity_decrement); 
 
                         tree.appendChild(lbranchElement) 
                     }}
@@ -341,15 +348,18 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                     nodeElement.classList.add("leaf")
                     nodeElement.style.left = left + "%"
                     nodeElement.style.top = 15 + node.impurity_decrement*h + "%"
-                    nodeElement.setAttribute("data-node-id", node.position);  // ← AGGIUNTO
+                    nodeElement.setAttribute("data-node-id", node.position);  
+                    nodeElement.setAttribute("data-impurity-decrease", node.impurity_decrement); 
 
                     nodeElement.onmouseover = function(event) {{
                         showTooltip(event, node, 15 + node.impurity_decrement*h, left); 
-                        highlightImpurityLine(node.position);  // ← AGGIUNTO
+                        highlightImpurityLine(node.position);  
+                        highlightSubtree(node.impurity_decrement);  // ← AGGIUNTO
                     }};
                     nodeElement.onmouseout = function() {{
                         hideTooltip();
-                        unhighlightImpurityLine(node.position);  // ← AGGIUNTO
+                        unhighlightImpurityLine(node.position); 
+                        unhighlightSubtree();  // ← AGGIUNTO
                     }};
                     
                     let nodeValue = document.createElement("div")
@@ -381,15 +391,18 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                 nodeElement.style.left = left + "%"
                 nodeElement.style.top = 15 + node.impurity_decrement*h + "%"
                 
-                nodeElement.setAttribute("data-node-id", node.position);  // ← AGGIUNTO
+                nodeElement.setAttribute("data-node-id", node.position); 
+                nodeElement.setAttribute("data-impurity-decrease", node.impurity_decrement);  // ← AGGIUNTO
 
                 nodeElement.onmouseover = function(event) {{
                     showTooltip(event, node, 15 + node.impurity_decrement*h, left); 
-                    highlightImpurityLine(node.position);  // ← AGGIUNTO
+                    highlightImpurityLine(node.position);  
+                    highlightSubtree(node.impurity_decrement);  // ← AGGIUNTO
                 }};
                 nodeElement.onmouseout = function() {{
                     hideTooltip();
-                    unhighlightImpurityLine(node.position);  // ← AGGIUNTO
+                    unhighlightImpurityLine(node.position);
+                    unhighlightSubtree();  // ← AGGIUNTO
                 }};
 
                 let canvas = document.createElement("canvas");
@@ -583,6 +596,97 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                 tooltip.style.visibility = 'hidden'
                 tooltip.style.opacity = 0
             }}
+
+            function getDirectChildren(nodeId) {{ // AGGIUNTO
+                return [2 * nodeId, 2 * nodeId + 1];
+            }}
+
+            function highlightSubtree(currentImpurityDecrease) {{
+                const allNodes = document.querySelectorAll('[data-node-id]');
+                const nodesToHighlight = new Set();
+                
+                allNodes.forEach(element => {{
+                    const impDec = parseFloat(element.getAttribute('data-impurity-decrease'));
+                    const nodeId = parseInt(element.getAttribute('data-node-id'));
+                    
+                    if (impDec < currentImpurityDecrease) {{
+                        nodesToHighlight.add(nodeId);
+                    }}
+                }});
+                
+                const nodesToHighlightCopy = new Set(nodesToHighlight);
+                nodesToHighlightCopy.forEach(nodeId => {{
+                    const children = getDirectChildren(nodeId);
+                    children.forEach(childId => {{
+                        nodesToHighlight.add(childId);
+                    }});
+                }});
+                
+                nodesToHighlight.forEach(nodeId => {{
+                    const nodeElements = document.querySelectorAll('.node[data-node-id="' + nodeId + '"]');
+                    nodeElements.forEach(
+                        el => {{
+                            el.classList.add('highlighted-node')
+
+                            // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {{
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "orange";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }}
+                        }}
+                    );
+                    
+                    const leafElements = document.querySelectorAll('.leaf[data-node-id="' + nodeId + '"]');
+                    leafElements.forEach(
+                        el => {{
+                            el.classList.add('highlighted-node')
+
+                            // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {{
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "orange";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }}
+                        }}
+                    );
+                    
+                    const branchElements = document.querySelectorAll('.square[data-node-id="' + nodeId + '"]');
+                    branchElements.forEach(el => el.classList.add('highlighted-branch'));
+                }});
+            }}
+
+            function unhighlightSubtree() {{
+                const highlightedNodes = document.querySelectorAll('.highlighted-node');
+                highlightedNodes.forEach(
+                    el => {{
+                        el.classList.remove('highlighted-node')
+
+                        // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {{
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "blue";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }}
+                        }}
+                    );
+                    
+                const highlightedBranches = document.querySelectorAll('.highlighted-branch');
+                highlightedBranches.forEach(el => el.classList.remove('highlighted-branch'));
+            }}
+
 
             d = 80/(plotData.l_c+plotData.r_c);
             h = 65/(plotData.max_imp_decrease);
