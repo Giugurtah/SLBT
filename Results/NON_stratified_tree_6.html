@@ -1,0 +1,1909 @@
+ 
+    <!DOCTYPE html> 
+    <html lang="en"> 
+    <head> 
+        <meta charset="UTF-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>Decision Tree Visualization</title> 
+        <style> 
+            body { font-family: Arial, sans-serif; text-align: center}
+            .tree-container { display: flex; justify-content: center; margin-top: 20px}
+            .node { border: 2px solid blue; border-radius: 100%; background-color: lightcyan; color: lightcyan ;display: inline-block;  position: absolute; width: 24px; height: 24px} 
+            .square { position: absolute; transform: translate(14px, 14px); z-index: -1}
+            .leaf { display: inline-block; font-weight: bolder; position: absolute; line-height: 24px}
+            .d_r:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top right, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .d_l:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top left, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .tooltip { position: absolute; background-color: rgba(0, 0, 0, 0.8); color: white; padding: 8px; border-radius: 5px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.3s; font-size: 14px; width: fit-content}
+            .t_l { transform: translate(35px, -5px)}
+            .t_r { transform: translateX(-100%) translate(-8px, -5px)}
+            .leaf_value{ display: inline-block; font-weight: bolder; position: absolute; line-height: 24px; transform: translate(6px, 30px)}
+            #legend { display: flex; flex-wrap: wrap; gap: 8px; position: absolute; bottom: 3%; width: 100%; justify-content: center; font-family: sans-serif}
+            .legend-item { display: flex; align-items: center; gap: 6px; margin-right: 12px }
+            .color-box { width: 16px; height: 16px; border: 1px solid #000; box-sizing: border-box}
+        </style> 
+    </head> 
+    <body> 
+        <h1>LBT_SLA_AB_6</h1> 
+        <div class="tree-container" id="tree"></div> 
+
+        <div id="tooltip" class="tooltip"></div>
+        
+        <script> 
+            const treeData = {
+    "isLeaf": 0,
+    "feature": "VENTILAZIONE",
+    "distribution": "0=0.0, 1=0.17, 2=0.22, 3=0.29, 4A=0.01, 4B=0.3",
+    "distArray": [
+        0.004325883201153569,
+        0.17231434751261715,
+        0.2191780821917808,
+        0.29343907714491707,
+        0.014419610670511895,
+        0.29632299927901945
+    ],
+    "lift1": "0=12.85, 1=0.67, 2=1.41, 3=0.37, 4A=16.95, 4B=0.56",
+    "lift2": "0=12.65, 1=1.41, 2=0.64, 3=0.96, 4A=9.36, 4B=0.49",
+    "treshold": "1",
+    "position": 1,
+    "gpi": 0.2289270224487012,
+    "ppi": 0.20689910990252694,
+    "impurity": 0.7481282835933005,
+    "labels": 1387,
+    "labArray": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4A",
+        "4B"
+    ],
+    "children": [
+        {
+            "isLeaf": 0,
+            "feature": "FVC",
+            "distribution": "1=0.04, 2=0.08, 3=0.12, 4A=0.01, 4B=0.75",
+            "distArray": [
+                0.04339250493096647,
+                0.07692307692307693,
+                0.1203155818540434,
+                0.013806706114398421,
+                0.7455621301775148
+            ],
+            "lift1": "1=3.48, 2=3.12, 3=1.78, 4A=18.14, 4B=0.19",
+            "lift2": "1=0.66, 2=0.73, 3=1.03, 4A=27.51, 4B=0.55",
+            "treshold": ">80",
+            "position": 2,
+            "gpi": 0.105436431971384,
+            "ppi": 0.08823827661965451,
+            "impurity": 0.4216705764270625,
+            "labels": 507,
+            "labArray": [
+                "1",
+                "2",
+                "3",
+                "4A",
+                "4B"
+            ],
+            "children": [
+                {
+                    "isLeaf": 0,
+                    "feature": "Tracheostomia",
+                    "distribution": "1=0.16, 2=0.18, 3=0.24, 4B=0.42",
+                    "distArray": [
+                        0.16037735849056603,
+                        0.1792452830188679,
+                        0.2358490566037736,
+                        0.42452830188679247
+                    ],
+                    "lift1": "1=0.37, 2=0.56, 3=0.8, 4B=1.53",
+                    "lift2": "1=0.39, 2=2.0, 3=1.64, 4B=0.45",
+                    "treshold": "0",
+                    "position": 4,
+                    "gpi": 0.16263271809148075,
+                    "ppi": 0.16263271809148083,
+                    "impurity": 0.7063011747953007,
+                    "labels": 106,
+                    "labArray": [
+                        "1",
+                        "2",
+                        "3",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 0,
+                            "feature": "PUMNS_AAII",
+                            "distribution": "1=0.19, 2=0.09, 3=0.1, 4B=0.62",
+                            "distArray": [
+                                0.19117647058823528,
+                                0.08823529411764706,
+                                0.10294117647058823,
+                                0.6176470588235294
+                            ],
+                            "lift1": "1=2.13, 2=2.01, 3=1.84, 4B=0.36",
+                            "lift2": "1=0.07, 2=0.16, 3=1.15, 4B=1.38",
+                            "treshold": "1",
+                            "position": 8,
+                            "gpi": 0.15395028566555766,
+                            "ppi": 0.12531977487848514,
+                            "impurity": 0.5635813148788927,
+                            "labels": 68,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_Bulbare",
+                                    "distribution": "1=0.34, 2=0.19, 3=0.06, 4B=0.41",
+                                    "distArray": [
+                                        0.34375,
+                                        0.1875,
+                                        0.0625,
+                                        0.40625
+                                    ],
+                                    "lift1": "1=0.11, 2=0.24, 3=3.36, 4B=1.74",
+                                    "lift2": "1=1.55, 2=1.19, 3=1.6, 4B=0.36",
+                                    "treshold": "1, 2, 3",
+                                    "position": 16,
+                                    "gpi": 0.20173921836291017,
+                                    "ppi": 0.17525580744145883,
+                                    "impurity": 0.677734375,
+                                    "labels": 32,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "1=0.08, 2=0.08, 3=0.15, 4B=0.69",
+                                            "distArray": [
+                                                0.07692307692307693,
+                                                0.07692307692307693,
+                                                0.15384615384615385,
+                                                0.6923076923076923
+                                            ],
+                                            "position": 32,
+                                            "value": "4B",
+                                            "impurity": 0.48520710059171596,
+                                            "labels": 13,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=0.45, 2=0.35, 3=0.52, 4B=2.34"
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "age_at_onset",
+                                            "distribution": "1=0.53, 2=0.26, 4B=0.21",
+                                            "distArray": [
+                                                0.5263157894736842,
+                                                0.2631578947368421,
+                                                0.21052631578947367
+                                            ],
+                                            "lift1": "1=0.06, 2=3.54, 4B=0.17",
+                                            "lift2": "1=0.87, 2=0.18, 4B=2.36",
+                                            "treshold": "5",
+                                            "position": 33,
+                                            "gpi": 0.2736596736596737,
+                                            "ppi": 0.16684491978609609,
+                                            "impurity": 0.6094182825484764,
+                                            "labels": 19,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "2=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 66,
+                                                    "value": "2",
+                                                    "impurity": 0.0,
+                                                    "labels": 2,
+                                                    "labArray": [
+                                                        "2"
+                                                    ],
+                                                    "gcr": "2=4.56"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.59, 2=0.18, 4B=0.24",
+                                                    "distArray": [
+                                                        0.5882352941176471,
+                                                        0.17647058823529413,
+                                                        0.23529411764705882
+                                                    ],
+                                                    "position": 67,
+                                                    "value": "1",
+                                                    "impurity": 0.5674740484429066,
+                                                    "labels": 17,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=3.41, 2=0.81, 4B=0.79"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_Bulbare",
+                                    "distribution": "1=0.06, 3=0.14, 4B=0.81",
+                                    "distArray": [
+                                        0.05555555555555555,
+                                        0.1388888888888889,
+                                        0.8055555555555556
+                                    ],
+                                    "lift1": "1=0.42, 3=6.67, 4B=0.06",
+                                    "lift2": "1=0.79, 3=0.23, 4B=1.15",
+                                    "treshold": "4",
+                                    "position": 17,
+                                    "gpi": 0.18470824949698217,
+                                    "ppi": 0.1211267605633802,
+                                    "impurity": 0.3287037037037036,
+                                    "labels": 36,
+                                    "labArray": [
+                                        "1",
+                                        "3",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "3=1.0",
+                                            "distArray": [
+                                                1.0
+                                            ],
+                                            "position": 34,
+                                            "value": "3",
+                                            "impurity": 0.0,
+                                            "labels": 1,
+                                            "labArray": [
+                                                "3"
+                                            ],
+                                            "gcr": "3=3.41"
+                                        },
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "1=0.06, 3=0.11, 4B=0.83",
+                                            "distArray": [
+                                                0.05714285714285714,
+                                                0.11428571428571428,
+                                                0.8285714285714286
+                                            ],
+                                            "position": 35,
+                                            "value": "4B",
+                                            "impurity": 0.29714285714285693,
+                                            "labels": 35,
+                                            "labArray": [
+                                                "1",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=0.33, 3=0.39, 4B=2.8"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "isLeaf": 0,
+                            "feature": "age_at_onset",
+                            "distribution": "1=0.11, 2=0.34, 3=0.47, 4B=0.08",
+                            "distArray": [
+                                0.10526315789473684,
+                                0.34210526315789475,
+                                0.47368421052631576,
+                                0.07894736842105263
+                            ],
+                            "lift1": "1=0.9, 2=0.16, 3=1.42, 4B=2.28",
+                            "lift2": "1=0.1, 2=2.82, 3=0.03, 4B=0.15",
+                            "treshold": "3, 4",
+                            "position": 9,
+                            "gpi": 0.21265462399371662,
+                            "ppi": 0.12249820014398817,
+                            "impurity": 0.6412742382271468,
+                            "labels": 38,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_AASS",
+                                    "distribution": "1=0.1, 2=0.23, 3=0.57, 4B=0.1",
+                                    "distArray": [
+                                        0.1,
+                                        0.23333333333333334,
+                                        0.5666666666666667,
+                                        0.1
+                                    ],
+                                    "lift1": "1=0.76, 2=0.19, 3=0.78, 4B=4.37",
+                                    "lift2": "1=1.01, 2=1.96, 3=0.4, 4B=2.17",
+                                    "treshold": "1, 2, 4",
+                                    "position": 18,
+                                    "gpi": 0.2555147058823529,
+                                    "ppi": 0.12767379679144394,
+                                    "impurity": 0.6044444444444446,
+                                    "labels": 30,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "Esordio_clinico_c",
+                                            "distribution": "1=0.11, 2=0.16, 3=0.74",
+                                            "distArray": [
+                                                0.10526315789473684,
+                                                0.15789473684210525,
+                                                0.7368421052631579
+                                            ],
+                                            "lift1": "1=0.58, 2=0.4, 3=1.19",
+                                            "lift2": "1=0.77, 2=3.16, 3=0.57",
+                                            "treshold": "spinale",
+                                            "position": 36,
+                                            "gpi": 0.23511904761904748,
+                                            "ppi": 0.23511904761904748,
+                                            "impurity": 0.42105263157894746,
+                                            "labels": 19,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.08, 3=0.92",
+                                                    "distArray": [
+                                                        0.08333333333333333,
+                                                        0.9166666666666666
+                                                    ],
+                                                    "position": 72,
+                                                    "value": "3",
+                                                    "impurity": 0.1527777777777779,
+                                                    "labels": 12,
+                                                    "labArray": [
+                                                        "1",
+                                                        "3"
+                                                    ],
+                                                    "gcr": "1=0.48, 3=3.12"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.14, 2=0.43, 3=0.43",
+                                                    "distArray": [
+                                                        0.14285714285714285,
+                                                        0.42857142857142855,
+                                                        0.42857142857142855
+                                                    ],
+                                                    "position": 73,
+                                                    "value": "2",
+                                                    "impurity": 0.6122448979591837,
+                                                    "labels": 7,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3"
+                                                    ],
+                                                    "gcr": "1=0.83, 2=1.96, 3=1.46"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "CNS_LS",
+                                            "distribution": "1=0.09, 2=0.36, 3=0.27, 4B=0.27",
+                                            "distArray": [
+                                                0.09090909090909091,
+                                                0.36363636363636365,
+                                                0.2727272727272727,
+                                                0.2727272727272727
+                                            ],
+                                            "lift1": "1=0.72, 2=0.69, 3=1.67, 4B=0.83",
+                                            "lift2": "1=0.28, 2=0.07, 3=3.14, 4B=0.33",
+                                            "treshold": "1, 2",
+                                            "position": 37,
+                                            "gpi": 0.3284883720930233,
+                                            "ppi": 0.2325581395348837,
+                                            "impurity": 0.7107438016528926,
+                                            "labels": 11,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.11, 2=0.44, 3=0.11, 4B=0.33",
+                                                    "distArray": [
+                                                        0.1111111111111111,
+                                                        0.4444444444444444,
+                                                        0.1111111111111111,
+                                                        0.3333333333333333
+                                                    ],
+                                                    "position": 74,
+                                                    "value": "2",
+                                                    "impurity": 0.6666666666666665,
+                                                    "labels": 9,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=0.64, 2=2.03, 3=0.38, 4B=1.12"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 75,
+                                                    "value": "3",
+                                                    "impurity": 0.0,
+                                                    "labels": 2,
+                                                    "labArray": [
+                                                        "3"
+                                                    ],
+                                                    "gcr": "3=3.41"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_AAII",
+                                    "distribution": "1=0.12, 2=0.75, 3=0.12",
+                                    "distArray": [
+                                        0.125,
+                                        0.75,
+                                        0.125
+                                    ],
+                                    "lift1": "1=0.1, 2=1.29, 3=0.14",
+                                    "lift2": "1=4.24, 2=0.04, 3=3.5",
+                                    "treshold": "2, 3",
+                                    "position": 19,
+                                    "gpi": 1.0,
+                                    "ppi": 0.6923076923076923,
+                                    "impurity": 0.40625,
+                                    "labels": 8,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "2=1.0",
+                                            "distArray": [
+                                                1.0
+                                            ],
+                                            "position": 38,
+                                            "value": "2",
+                                            "impurity": 0.0,
+                                            "labels": 6,
+                                            "labArray": [
+                                                "2"
+                                            ],
+                                            "gcr": "2=4.56"
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "terapia",
+                                            "distribution": "1=0.5, 3=0.5",
+                                            "distArray": [
+                                                0.5,
+                                                0.5
+                                            ],
+                                            "lift1": "1=0.12, 3=1.88",
+                                            "lift2": "1=1.88, 3=0.12",
+                                            "treshold": "Riluzolo",
+                                            "position": 39,
+                                            "gpi": 1.0,
+                                            "ppi": 1.0,
+                                            "impurity": 0.5,
+                                            "labels": 2,
+                                            "labArray": [
+                                                "1",
+                                                "3"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 78,
+                                                    "value": "3",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "3"
+                                                    ],
+                                                    "gcr": "3=3.41"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 79,
+                                                    "value": "1",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "1"
+                                                    ],
+                                                    "gcr": "1=5.8"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "isLeaf": 0,
+                    "feature": "MRC_Bulbare",
+                    "distribution": "1=0.01, 2=0.05, 3=0.09, 4A=0.02, 4B=0.83",
+                    "distArray": [
+                        0.012468827930174564,
+                        0.04987531172069826,
+                        0.08977556109725686,
+                        0.017456359102244388,
+                        0.830423940149626
+                    ],
+                    "lift1": "1=6.76, 2=2.27, 3=2.25, 4A=22.02, 4B=0.26",
+                    "lift2": "1=14.66, 2=3.27, 3=2.71, 4A=12.82, 4B=0.23",
+                    "treshold": "0",
+                    "position": 5,
+                    "gpi": 0.027131144563764406,
+                    "ppi": 0.027131144563764312,
+                    "impurity": 0.29938868539374763,
+                    "labels": 401,
+                    "labArray": [
+                        "1",
+                        "2",
+                        "3",
+                        "4A",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 0,
+                            "feature": "MRC_AASS",
+                            "distribution": "2=0.04, 3=0.03, 4A=0.02, 4B=0.91",
+                            "distArray": [
+                                0.03888888888888889,
+                                0.03333333333333333,
+                                0.016666666666666666,
+                                0.9111111111111111
+                            ],
+                            "lift1": "2=3.41, 3=6.61, 4A=23.36, 4B=0.28",
+                            "lift2": "2=3.27, 3=5.18, 4A=24.56, 4B=0.32",
+                            "treshold": "1",
+                            "position": 10,
+                            "gpi": 0.03676319572807595,
+                            "ppi": 0.03676319572807587,
+                            "impurity": 0.1669753086419753,
+                            "labels": 180,
+                            "labArray": [
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "age_at_onset",
+                                    "distribution": "2=0.06, 3=0.17, 4A=0.06, 4B=0.72",
+                                    "distArray": [
+                                        0.05555555555555555,
+                                        0.16666666666666666,
+                                        0.05555555555555555,
+                                        0.7222222222222222
+                                    ],
+                                    "lift1": "2=3.28, 3=4.28, 4A=1.01, 4B=0.07",
+                                    "lift2": "2=0.5, 3=0.14, 4A=2.13, 4B=1.15",
+                                    "treshold": "3",
+                                    "position": 20,
+                                    "gpi": 0.6041666666666665,
+                                    "ppi": 0.5803571428571426,
+                                    "impurity": 0.4444444444444444,
+                                    "labels": 18,
+                                    "labArray": [
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "PUMNS_Bulbare",
+                                            "distribution": "2=0.25, 3=0.75",
+                                            "distArray": [
+                                                0.25,
+                                                0.75
+                                            ],
+                                            "lift1": "2=3.76, 3=0.08",
+                                            "lift2": "2=0.06, 3=1.31",
+                                            "treshold": "1",
+                                            "position": 40,
+                                            "gpi": 1.0,
+                                            "ppi": 1.0,
+                                            "impurity": 0.375,
+                                            "labels": 4,
+                                            "labArray": [
+                                                "2",
+                                                "3"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "2=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 80,
+                                                    "value": "2",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "2"
+                                                    ],
+                                                    "gcr": "2=4.56"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 81,
+                                                    "value": "3",
+                                                    "impurity": 0.0,
+                                                    "labels": 3,
+                                                    "labArray": [
+                                                        "3"
+                                                    ],
+                                                    "gcr": "3=3.41"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "terapia",
+                                            "distribution": "4A=0.07, 4B=0.93",
+                                            "distArray": [
+                                                0.07142857142857142,
+                                                0.9285714285714286
+                                            ],
+                                            "lift1": "4A=0.4, 4B=1.05",
+                                            "lift2": "4A=13.19, 4B=0.06",
+                                            "treshold": "Edaravone, Riluzolo",
+                                            "position": 41,
+                                            "gpi": 1.0,
+                                            "ppi": 1.0,
+                                            "impurity": 0.13265306122448983,
+                                            "labels": 14,
+                                            "labArray": [
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "4B=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 82,
+                                                    "value": "4B",
+                                                    "impurity": 0.0,
+                                                    "labels": 13,
+                                                    "labArray": [
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "4B=3.37"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "4A=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 83,
+                                                    "value": "4A",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "4A"
+                                                    ],
+                                                    "gcr": "4A=69.35"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 1,
+                                    "distribution": "2=0.04, 3=0.02, 4A=0.01, 4B=0.93",
+                                    "distArray": [
+                                        0.037037037037037035,
+                                        0.018518518518518517,
+                                        0.012345679012345678,
+                                        0.9320987654320988
+                                    ],
+                                    "position": 21,
+                                    "value": "4B",
+                                    "impurity": 0.12932479804907782,
+                                    "labels": 162,
+                                    "labArray": [
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "gcr": "2=0.17, 3=0.06, 4A=0.86, 4B=3.15"
+                                }
+                            ]
+                        },
+                        {
+                            "isLeaf": 0,
+                            "feature": "PEG",
+                            "distribution": "1=0.02, 2=0.06, 3=0.14, 4A=0.02, 4B=0.76",
+                            "distArray": [
+                                0.02262443438914027,
+                                0.058823529411764705,
+                                0.13574660633484162,
+                                0.01809954751131222,
+                                0.7647058823529411
+                            ],
+                            "lift1": "1=1.21, 2=0.61, 3=1.56, 4A=10.97, 4B=0.69",
+                            "lift2": "1=3.15, 2=1.27, 3=3.39, 4A=10.21, 4B=0.27",
+                            "treshold": "0, 1",
+                            "position": 11,
+                            "gpi": 0.027439699927962826,
+                            "ppi": 0.018196993408260823,
+                            "impurity": 0.39249810609938374,
+                            "labels": 221,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "age_at_onset",
+                                    "distribution": "1=0.02, 2=0.06, 3=0.14, 4A=0.01, 4B=0.77",
+                                    "distArray": [
+                                        0.022727272727272728,
+                                        0.05909090909090909,
+                                        0.13636363636363635,
+                                        0.013636363636363636,
+                                        0.7681818181818182
+                                    ],
+                                    "lift1": "1=2.37, 2=1.06, 3=1.09, 4A=29.86, 4B=0.43",
+                                    "lift2": "1=3.72, 2=1.64, 3=3.8, 4A=10.35, 4B=0.21",
+                                    "treshold": "2, 3, 4, 5",
+                                    "position": 22,
+                                    "gpi": 0.023387680316557587,
+                                    "ppi": 0.012545240128501698,
+                                    "impurity": 0.387107438016529,
+                                    "labels": 220,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "1=0.02, 2=0.06, 3=0.12, 4A=0.01, 4B=0.78",
+                                            "distArray": [
+                                                0.023809523809523808,
+                                                0.06190476190476191,
+                                                0.12380952380952381,
+                                                0.014285714285714285,
+                                                0.7761904761904762
+                                            ],
+                                            "position": 44,
+                                            "value": "4B",
+                                            "impurity": 0.37759637188208617,
+                                            "labels": 210,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=0.14, 2=0.28, 3=0.42, 4A=0.99, 4B=2.62"
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "MRC_AASS",
+                                            "distribution": "3=0.4, 4B=0.6",
+                                            "distArray": [
+                                                0.4,
+                                                0.6
+                                            ],
+                                            "lift1": "3=0.23, 4B=1.51",
+                                            "lift2": "3=2.39, 4B=0.07",
+                                            "treshold": "0",
+                                            "position": 45,
+                                            "gpi": 0.6428571428571432,
+                                            "ppi": 0.6428571428571432,
+                                            "impurity": 0.48,
+                                            "labels": 10,
+                                            "labArray": [
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=0.14, 4B=0.86",
+                                                    "distArray": [
+                                                        0.14285714285714285,
+                                                        0.8571428571428571
+                                                    ],
+                                                    "position": 90,
+                                                    "value": "4B",
+                                                    "impurity": 0.24489795918367352,
+                                                    "labels": 7,
+                                                    "labArray": [
+                                                        "3",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "3=0.49, 4B=2.89"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 91,
+                                                    "value": "3",
+                                                    "impurity": 0.0,
+                                                    "labels": 3,
+                                                    "labArray": [
+                                                        "3"
+                                                    ],
+                                                    "gcr": "3=3.41"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 1,
+                                    "distribution": "4A=1.0",
+                                    "distArray": [
+                                        1.0
+                                    ],
+                                    "position": 23,
+                                    "value": "4A",
+                                    "impurity": 0.0,
+                                    "labels": 1,
+                                    "labArray": [
+                                        "4A"
+                                    ],
+                                    "gcr": "4A=69.35"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "isLeaf": 0,
+            "feature": "PUMNS_AASS",
+            "distribution": "0=0.01, 1=0.25, 2=0.3, 3=0.39, 4A=0.01, 4B=0.04",
+            "distArray": [
+                0.006818181818181818,
+                0.24659090909090908,
+                0.30113636363636365,
+                0.3931818181818182,
+                0.014772727272727272,
+                0.0375
+            ],
+            "lift1": "0=5.29, 1=0.22, 2=1.46, 3=0.31, 4A=11.92, 4B=4.66",
+            "lift2": "0=5.7, 1=1.39, 2=0.71, 3=0.3, 4A=9.83, 4B=3.77",
+            "treshold": "4, 5",
+            "position": 3,
+            "gpi": 0.08833537860699926,
+            "ppi": 0.05857563645234605,
+            "impurity": 0.692246900826446,
+            "labels": 880,
+            "labArray": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4A",
+                "4B"
+            ],
+            "children": [
+                {
+                    "isLeaf": 0,
+                    "feature": "VENTILAZIONE",
+                    "distribution": "1=0.02, 2=0.11, 3=0.81, 4A=0.01, 4B=0.05",
+                    "distArray": [
+                        0.017094017094017096,
+                        0.1111111111111111,
+                        0.811965811965812,
+                        0.008547008547008548,
+                        0.05128205128205128
+                    ],
+                    "lift1": "1=3.05, 2=2.22, 3=0.29, 4A=32.85, 4B=3.56",
+                    "lift2": "1=2.76, 2=0.62, 3=0.26, 4A=45.55, 4B=5.5",
+                    "treshold": "0, 2",
+                    "position": 6,
+                    "gpi": 0.1773972323141607,
+                    "ppi": 0.17103051448235837,
+                    "impurity": 0.3253707356271459,
+                    "labels": 117,
+                    "labArray": [
+                        "1",
+                        "2",
+                        "3",
+                        "4A",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 0,
+                            "feature": "PUMNS_Bulbare",
+                            "distribution": "1=0.02, 2=0.12, 3=0.84, 4A=0.01, 4B=0.02",
+                            "distArray": [
+                                0.017699115044247787,
+                                0.11504424778761062,
+                                0.8407079646017699,
+                                0.008849557522123894,
+                                0.017699115044247787
+                            ],
+                            "lift1": "1=4.23, 2=2.41, 3=0.35, 4A=23.37, 4B=8.1",
+                            "lift2": "1=1.76, 2=0.32, 3=0.45, 4A=18.08, 4B=22.22",
+                            "treshold": "0, 1",
+                            "position": 12,
+                            "gpi": 0.07854362652824762,
+                            "ppi": 0.06920112774315383,
+                            "impurity": 0.27927010729109564,
+                            "labels": 113,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_AAII",
+                                    "distribution": "1=0.1, 2=0.29, 3=0.62",
+                                    "distArray": [
+                                        0.09523809523809523,
+                                        0.2857142857142857,
+                                        0.6190476190476191
+                                    ],
+                                    "lift1": "1=0.4, 2=1.05, 3=1.07",
+                                    "lift2": "1=5.53, 2=0.84, 3=0.38",
+                                    "treshold": "4, 5",
+                                    "position": 24,
+                                    "gpi": 0.15265804597701144,
+                                    "ppi": 0.13476166328600372,
+                                    "impurity": 0.5260770975056689,
+                                    "labels": 21,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "terapia",
+                                            "distribution": "2=0.29, 3=0.71",
+                                            "distArray": [
+                                                0.29411764705882354,
+                                                0.7058823529411765
+                                            ],
+                                            "lift1": "2=0.12, 3=1.37",
+                                            "lift2": "2=3.27, 3=0.06",
+                                            "treshold": "Edaravone, Riluzolo",
+                                            "position": 48,
+                                            "gpi": 0.168888888888889,
+                                            "ppi": 0.15000000000000033,
+                                            "impurity": 0.4152249134948096,
+                                            "labels": 17,
+                                            "labArray": [
+                                                "2",
+                                                "3"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "2=0.25, 3=0.75",
+                                                    "distArray": [
+                                                        0.25,
+                                                        0.75
+                                                    ],
+                                                    "position": 96,
+                                                    "value": "3",
+                                                    "impurity": 0.375,
+                                                    "labels": 16,
+                                                    "labArray": [
+                                                        "2",
+                                                        "3"
+                                                    ],
+                                                    "gcr": "2=1.14, 3=2.56"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "2=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 97,
+                                                    "value": "2",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "2"
+                                                    ],
+                                                    "gcr": "2=4.56"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "MRC_AASS",
+                                            "distribution": "1=0.5, 2=0.25, 3=0.25",
+                                            "distArray": [
+                                                0.5,
+                                                0.25,
+                                                0.25
+                                            ],
+                                            "lift1": "1=1.26, 2=1.13, 3=0.35",
+                                            "lift2": "1=0.08, 2=0.18, 3=3.65",
+                                            "treshold": "1",
+                                            "position": 49,
+                                            "gpi": 0.4666666666666667,
+                                            "ppi": 0.4666666666666667,
+                                            "impurity": 0.625,
+                                            "labels": 4,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.67, 2=0.33",
+                                                    "distArray": [
+                                                        0.6666666666666666,
+                                                        0.3333333333333333
+                                                    ],
+                                                    "position": 98,
+                                                    "value": "1",
+                                                    "impurity": 0.4444444444444445,
+                                                    "labels": 3,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2"
+                                                    ],
+                                                    "gcr": "1=3.87, 2=1.52"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "3=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 99,
+                                                    "value": "3",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "3"
+                                                    ],
+                                                    "gcr": "3=3.41"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 1,
+                                    "distribution": "2=0.08, 3=0.89, 4A=0.01, 4B=0.02",
+                                    "distArray": [
+                                        0.07608695652173914,
+                                        0.8913043478260869,
+                                        0.010869565217391304,
+                                        0.021739130434782608
+                                    ],
+                                    "position": 25,
+                                    "value": "3",
+                                    "impurity": 0.19919659735349718,
+                                    "labels": 92,
+                                    "labArray": [
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "gcr": "2=0.35, 3=3.04, 4A=0.75, 4B=0.07"
+                                }
+                            ]
+                        },
+                        {
+                            "isLeaf": 1,
+                            "distribution": "4B=1.0",
+                            "distArray": [
+                                1.0
+                            ],
+                            "position": 13,
+                            "value": "4B",
+                            "impurity": 0.0,
+                            "labels": 4,
+                            "labArray": [
+                                "4B"
+                            ],
+                            "gcr": "4B=3.37"
+                        }
+                    ]
+                },
+                {
+                    "isLeaf": 0,
+                    "feature": "PUMNS_AAII",
+                    "distribution": "0=0.01, 1=0.28, 2=0.33, 3=0.33, 4A=0.02, 4B=0.04",
+                    "distArray": [
+                        0.007863695937090432,
+                        0.2817824377457405,
+                        0.3302752293577982,
+                        0.3289646133682831,
+                        0.015727391874180863,
+                        0.035386631716906945
+                    ],
+                    "lift1": "0=4.34, 1=1.21, 2=0.77, 3=0.31, 4A=9.74, 4B=3.28",
+                    "lift2": "0=5.13, 1=0.35, 2=0.57, 3=0.53, 4A=19.08, 4B=5.65",
+                    "treshold": "0, 1, 2, 3",
+                    "position": 7,
+                    "gpi": 0.04020417671262698,
+                    "ppi": 0.03144505570835563,
+                    "impurity": 0.7017378115289546,
+                    "labels": 763,
+                    "labArray": [
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4A",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 0,
+                            "feature": "FVC",
+                            "distribution": "0=0.01, 1=0.3, 2=0.35, 3=0.29, 4A=0.01, 4B=0.04",
+                            "distArray": [
+                                0.008746355685131196,
+                                0.30174927113702626,
+                                0.35131195335276966,
+                                0.2886297376093295,
+                                0.013119533527696793,
+                                0.03644314868804665
+                            ],
+                            "lift1": "0=3.51, 1=1.02, 2=0.5, 3=0.58, 4A=9.95, 4B=5.12",
+                            "lift2": "0=4.52, 1=0.37, 2=0.89, 3=0.41, 4A=15.34, 4B=5.96",
+                            "treshold": "<40, >80, ND",
+                            "position": 14,
+                            "gpi": 0.04152776992880032,
+                            "ppi": 0.023345680005484124,
+                            "impurity": 0.7006434393832502,
+                            "labels": 686,
+                            "labArray": [
+                                "0",
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "VENTILAZIONE",
+                                    "distribution": "0=0.01, 1=0.36, 2=0.32, 3=0.26, 4A=0.01, 4B=0.04",
+                                    "distArray": [
+                                        0.011764705882352941,
+                                        0.3607843137254902,
+                                        0.3176470588235294,
+                                        0.2568627450980392,
+                                        0.013725490196078431,
+                                        0.0392156862745098
+                                    ],
+                                    "lift1": "0=2.32, 1=0.44, 2=0.47, 3=0.47, 4A=11.71, 4B=9.71",
+                                    "lift2": "0=3.14, 1=1.31, 2=0.24, 3=0.67, 4A=11.1, 4B=2.35",
+                                    "treshold": "3",
+                                    "position": 28,
+                                    "gpi": 0.036777674959214676,
+                                    "ppi": 0.035577650934585384,
+                                    "impurity": 0.7010918877354865,
+                                    "labels": 510,
+                                    "labArray": [
+                                        "0",
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "1=0.14, 4B=0.86",
+                                            "distArray": [
+                                                0.14285714285714285,
+                                                0.8571428571428571
+                                            ],
+                                            "position": 56,
+                                            "value": "4B",
+                                            "impurity": 0.24489795918367352,
+                                            "labels": 14,
+                                            "labArray": [
+                                                "1",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=0.83, 4B=2.89"
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "MRC_AAII",
+                                            "distribution": "0=0.01, 1=0.37, 2=0.33, 3=0.26, 4A=0.01, 4B=0.02",
+                                            "distArray": [
+                                                0.012096774193548387,
+                                                0.36693548387096775,
+                                                0.32661290322580644,
+                                                0.26411290322580644,
+                                                0.014112903225806451,
+                                                0.016129032258064516
+                                            ],
+                                            "lift1": "0=5.69, 1=0.19, 2=0.93, 3=0.55, 4A=22.83, 4B=5.74",
+                                            "lift2": "0=6.12, 1=0.22, 2=0.44, 3=1.43, 4A=8.75, 4B=12.39",
+                                            "treshold": "1",
+                                            "position": 57,
+                                            "gpi": 0.021176733410002146,
+                                            "ppi": 0.021176733410002188,
+                                            "impurity": 0.6883210848074922,
+                                            "labels": 496,
+                                            "labArray": [
+                                                "0",
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "0=0.02, 1=0.42, 2=0.31, 3=0.22, 4A=0.01, 4B=0.01",
+                                                    "distArray": [
+                                                        0.016853932584269662,
+                                                        0.4241573033707865,
+                                                        0.3146067415730337,
+                                                        0.21629213483146068,
+                                                        0.014044943820224719,
+                                                        0.014044943820224719
+                                                    ],
+                                                    "position": 114,
+                                                    "value": "1",
+                                                    "impurity": 0.6736523166266887,
+                                                    "labels": 356,
+                                                    "labArray": [
+                                                        "0",
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4A",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "0=3.9, 1=2.46, 2=1.44, 3=0.74, 4A=0.97, 4B=0.05"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.22, 2=0.36, 3=0.39, 4A=0.01, 4B=0.02",
+                                                    "distArray": [
+                                                        0.22142857142857142,
+                                                        0.35714285714285715,
+                                                        0.38571428571428573,
+                                                        0.014285714285714285,
+                                                        0.02142857142857143
+                                                    ],
+                                                    "position": 115,
+                                                    "value": "3",
+                                                    "impurity": 0.6739795918367347,
+                                                    "labels": 140,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4A",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=1.29, 2=1.63, 3=1.31, 4A=0.99, 4B=0.07"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "PUMNS_Bulbare",
+                                    "distribution": "1=0.13, 2=0.45, 3=0.38, 4A=0.01, 4B=0.03",
+                                    "distArray": [
+                                        0.13068181818181818,
+                                        0.44886363636363635,
+                                        0.3806818181818182,
+                                        0.011363636363636364,
+                                        0.028409090909090908
+                                    ],
+                                    "lift1": "1=1.79, 2=0.28, 3=0.47, 4A=18.38, 4B=8.88",
+                                    "lift2": "1=0.62, 2=1.26, 3=0.39, 4A=7.8, 4B=4.12",
+                                    "treshold": "2, 3, 4",
+                                    "position": 29,
+                                    "gpi": 0.06740835882546306,
+                                    "ppi": 0.04610394134922483,
+                                    "impurity": 0.6355888429752067,
+                                    "labels": 176,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "MRC_AASS",
+                                            "distribution": "1=0.21, 2=0.26, 3=0.48, 4A=0.03, 4B=0.02",
+                                            "distArray": [
+                                                0.20967741935483872,
+                                                0.25806451612903225,
+                                                0.4838709677419355,
+                                                0.03225806451612903,
+                                                0.016129032258064516
+                                            ],
+                                            "lift1": "1=0.31, 2=0.26, 3=0.76, 4A=3.69, 4B=23.51",
+                                            "lift2": "1=0.31, 2=1.55, 3=0.42, 4A=3.19, 4B=14.31",
+                                            "treshold": "0",
+                                            "position": 58,
+                                            "gpi": 0.08379828811498401,
+                                            "ppi": 0.08379828811498401,
+                                            "impurity": 0.6540062434963578,
+                                            "labels": 62,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.09, 2=0.09, 3=0.7, 4A=0.09, 4B=0.04",
+                                                    "distArray": [
+                                                        0.08695652173913043,
+                                                        0.08695652173913043,
+                                                        0.6956521739130435,
+                                                        0.08695652173913043,
+                                                        0.043478260869565216
+                                                    ],
+                                                    "position": 116,
+                                                    "value": "3",
+                                                    "impurity": 0.49149338374291124,
+                                                    "labels": 23,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4A",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=0.5, 2=0.4, 3=2.37, 4A=6.03, 4B=0.15"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.28, 2=0.36, 3=0.36",
+                                                    "distArray": [
+                                                        0.28205128205128205,
+                                                        0.358974358974359,
+                                                        0.358974358974359
+                                                    ],
+                                                    "position": 117,
+                                                    "value": "2",
+                                                    "impurity": 0.6627218934911242,
+                                                    "labels": 39,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3"
+                                                    ],
+                                                    "gcr": "1=1.64, 2=1.64, 3=1.22"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "VENTILAZIONE",
+                                            "distribution": "1=0.09, 2=0.55, 3=0.32, 4B=0.04",
+                                            "distArray": [
+                                                0.08771929824561403,
+                                                0.5526315789473685,
+                                                0.32456140350877194,
+                                                0.03508771929824561
+                                            ],
+                                            "lift1": "1=0.38, 2=1.02, 3=0.67, 4B=5.4",
+                                            "lift2": "1=2.42, 2=0.06, 3=1.29, 4B=9.66",
+                                            "treshold": "0",
+                                            "position": 59,
+                                            "gpi": 0.042236204527374116,
+                                            "ppi": 0.03467852751862322,
+                                            "impurity": 0.5803324099722991,
+                                            "labels": 114,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.08, 2=0.57, 3=0.33, 4B=0.02",
+                                                    "distArray": [
+                                                        0.08181818181818182,
+                                                        0.5727272727272728,
+                                                        0.32727272727272727,
+                                                        0.01818181818181818
+                                                    ],
+                                                    "position": 118,
+                                                    "value": "2",
+                                                    "impurity": 0.5578512396694214,
+                                                    "labels": 110,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=0.47, 2=2.61, 3=1.12, 4B=0.06"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.25, 3=0.25, 4B=0.5",
+                                                    "distArray": [
+                                                        0.25,
+                                                        0.25,
+                                                        0.5
+                                                    ],
+                                                    "position": 119,
+                                                    "value": "4B",
+                                                    "impurity": 0.625,
+                                                    "labels": 4,
+                                                    "labArray": [
+                                                        "1",
+                                                        "3",
+                                                        "4B"
+                                                    ],
+                                                    "gcr": "1=1.45, 3=0.85, 4B=1.69"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "isLeaf": 0,
+                            "feature": "PEG",
+                            "distribution": "1=0.1, 2=0.14, 3=0.69, 4A=0.04, 4B=0.03",
+                            "distArray": [
+                                0.1038961038961039,
+                                0.14285714285714285,
+                                0.6883116883116883,
+                                0.03896103896103896,
+                                0.025974025974025976
+                            ],
+                            "lift1": "1=0.31, 2=0.23, 3=0.22, 4A=16.32, 4B=5.72",
+                            "lift2": "1=0.31, 2=0.24, 3=0.78, 4A=8.07, 4B=3.2",
+                            "treshold": "2",
+                            "position": 15,
+                            "gpi": 0.03815879534565369,
+                            "ppi": 0.03815879534565369,
+                            "impurity": 0.49283184348119413,
+                            "labels": 77,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 1,
+                                    "distribution": "4A=1.0",
+                                    "distArray": [
+                                        1.0
+                                    ],
+                                    "position": 30,
+                                    "value": "4A",
+                                    "impurity": 0.0,
+                                    "labels": 1,
+                                    "labArray": [
+                                        "4A"
+                                    ],
+                                    "gcr": "4A=69.35"
+                                },
+                                {
+                                    "isLeaf": 0,
+                                    "feature": "VENTILAZIONE",
+                                    "distribution": "1=0.11, 2=0.14, 3=0.7, 4A=0.03, 4B=0.03",
+                                    "distArray": [
+                                        0.10526315789473684,
+                                        0.14473684210526316,
+                                        0.6973684210526315,
+                                        0.02631578947368421,
+                                        0.02631578947368421
+                                    ],
+                                    "lift1": "1=0.55, 2=0.48, 3=0.23, 4A=18.26, 4B=8.7",
+                                    "lift2": "1=0.35, 2=0.48, 3=0.74, 4A=7.44, 4B=6.89",
+                                    "treshold": "3",
+                                    "position": 31,
+                                    "gpi": 0.0857571777068869,
+                                    "ppi": 0.08256201406886313,
+                                    "impurity": 0.48026315789473695,
+                                    "labels": 76,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "distribution": "4B=1.0",
+                                            "distArray": [
+                                                1.0
+                                            ],
+                                            "position": 62,
+                                            "value": "4B",
+                                            "impurity": 0.0,
+                                            "labels": 2,
+                                            "labArray": [
+                                                "4B"
+                                            ],
+                                            "gcr": "4B=3.37"
+                                        },
+                                        {
+                                            "isLeaf": 0,
+                                            "feature": "Esordio_clinico_c",
+                                            "distribution": "1=0.11, 2=0.15, 3=0.72, 4A=0.03",
+                                            "distArray": [
+                                                0.10810810810810811,
+                                                0.14864864864864866,
+                                                0.7162162162162162,
+                                                0.02702702702702703
+                                            ],
+                                            "lift1": "1=0.66, 2=1.01, 3=0.79, 4A=7.79",
+                                            "lift2": "1=8.66, 2=0.09, 3=0.03, 4A=0.98",
+                                            "treshold": "bulbare, spinale",
+                                            "position": 63,
+                                            "gpi": 0.05329708451920773,
+                                            "ppi": 0.04029984410759925,
+                                            "impurity": 0.4525200876552228,
+                                            "labels": 74,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A"
+                                            ],
+                                            "children": [
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=0.1, 2=0.15, 3=0.73, 4A=0.03",
+                                                    "distArray": [
+                                                        0.0958904109589041,
+                                                        0.1506849315068493,
+                                                        0.726027397260274,
+                                                        0.0273972602739726
+                                                    ],
+                                                    "position": 126,
+                                                    "value": "3",
+                                                    "impurity": 0.4402326890598611,
+                                                    "labels": 73,
+                                                    "labArray": [
+                                                        "1",
+                                                        "2",
+                                                        "3",
+                                                        "4A"
+                                                    ],
+                                                    "gcr": "1=0.56, 2=0.69, 3=2.47, 4A=1.9"
+                                                },
+                                                {
+                                                    "isLeaf": 1,
+                                                    "distribution": "1=1.0",
+                                                    "distArray": [
+                                                        1.0
+                                                    ],
+                                                    "position": 127,
+                                                    "value": "1",
+                                                    "impurity": 0.0,
+                                                    "labels": 1,
+                                                    "labArray": [
+                                                        "1"
+                                                    ],
+                                                    "gcr": "1=5.8"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}; 
+            const plotData = {
+    "l_c": 0.96875,
+    "r_c": 0.984375,
+    "depth": 6,
+    "colors": [
+        "#FF6384",
+        "#36A2EB",
+        "#FFCE56",
+        "#4CAF50",
+        "#9966FF",
+        "#D81B60",
+        "#00ACC1",
+        "#8D6E63",
+        "#FF9800"
+    ],
+    "labels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4A",
+        "4B"
+    ]
+};
+            
+            function iter(node, top, left, d, h) {
+                if(node.isLeaf == 1){
+                    let nodeElement = document.createElement("div")
+                    nodeElement.classList.add("leaf")
+                    nodeElement.style.left = left + "%"
+                    nodeElement.style.top = top + "%"
+
+                    nodeElement.onmouseover = function(event) { showTooltip(event, node, top, left); };
+                    nodeElement.onmouseout = hideTooltip;
+                    
+                    let nodeValue = document.createElement("div")
+                    nodeValue.classList.add("leaf_value")
+                    nodeValue.style.left = left + "%"
+                    nodeValue.style.top = top + "%"
+                    nodeValue.innerText = node.value
+
+                    let canvas = document.createElement("canvas");
+                    canvas.width = 36;
+                    canvas.height = 36;
+                    canvas.style.position = "absolute";
+                    canvas.style.top = "-6px";
+                    canvas.style.left = "-6px";
+                    nodeElement.appendChild(canvas);
+
+                    tree = document.getElementById("tree")
+                    tree.appendChild(nodeElement)
+                    tree.appendChild(nodeValue)
+
+                    if (node.distribution) {
+                        drawPieChart(canvas, node.distArray, node.labArray);
+                    }
+                    return
+                }
+
+                let nodeElement = document.createElement("div")
+                nodeElement.classList.add("node")
+                nodeElement.style.left = left + "%"
+                nodeElement.style.top = top + "%"
+                nodeElement.onmouseover = function(event) { showTooltip(event, node, top, left); };
+                nodeElement.onmouseout = hideTooltip;
+
+                let lbranchElement = document.createElement("div")
+                lbranchElement.classList.add("square")
+                lbranchElement.classList.add("d_l")
+                lbranchElement.style.right = (100-left) + "%"
+                lbranchElement.style.top = top + "%"
+                lbranchElement.style.height = h + "%"
+                lbranchElement.style.width = d/2 + "%"
+
+                let rbranchElement = document.createElement("div")
+                rbranchElement.classList.add("square")
+                rbranchElement.classList.add("d_r")
+                rbranchElement.style.left = left + "%"
+                rbranchElement.style.top = top + "%"
+                rbranchElement.style.height = h + "%"
+                rbranchElement.style.width = d/2 + "%"
+
+                let canvas = document.createElement("canvas");
+                canvas.width = 36;
+                canvas.height = 36;
+                canvas.style.position = "absolute";
+                canvas.style.top = "-6px";
+                canvas.style.left = "-6px";
+                nodeElement.appendChild(canvas);
+
+                tree = document.getElementById("tree")
+                tree.appendChild(nodeElement)
+                tree.appendChild(lbranchElement)
+                tree.appendChild(rbranchElement)
+
+                if (node.distribution) {
+                    drawPieChart(canvas, node.distArray, node.labArray);
+                }
+
+                iter(node.children[0], top+h, left-d/2, d/2, h)
+                iter(node.children[1], top+h, left+d/2, d/2, h)
+                return
+            }
+
+            // Legend
+            const legendContainer = document.createElement('div');
+            legendContainer.id = 'legend';
+
+            for (let i = 0; i < plotData.labels.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = plotData.colors[i];
+
+                const label = document.createElement('span');
+                label.textContent = plotData.labels[i];
+
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legendContainer.appendChild(item);
+            }
+            document.body.appendChild(legendContainer);
+
+            function drawPieChart(canvas, distArray, labArray) {
+                let ctx = canvas.getContext("2d");
+                let total = distArray.reduce((sum, val) => sum + val, 0);
+                let startAngle = 0;
+
+                distArray.forEach((value, index) => {
+                    let sliceAngle = (value / total) * 2 * Math.PI;
+
+                    ctx.beginPath();
+                    ctx.moveTo(18, 18);
+                    ctx.arc(18, 18, 16, startAngle, startAngle + sliceAngle);
+                    ctx.closePath();
+                    plotData.labels.forEach((valueLab, indexLab) => {
+                        if(valueLab == labArray[index]) {
+                            ctx.fillStyle = plotData.colors[indexLab % plotData.colors.length];
+                        }
+                    })
+                    ctx.fill();
+
+                    startAngle += sliceAngle;
+                });
+
+                ctx.beginPath();
+                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                ctx.strokeStyle = "blue";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            function showTooltip(event, node, top, left) {
+                tooltip = document.getElementById('tooltip')
+
+                if(node.isLeaf == 1){
+                    tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels + "\nClass distribution: [" + node.distribution +  "]\nGCR: [" + node.gcr + "]\nImpurty: " + node.impurity.toFixed(3) + "\nPrediction: "+ node.value;
+                } else {
+                    if(node.lift1 && node.lift2) {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nLIFT left: [" + node.lift1 + "]\nLIFT right: [" + node.lift2 + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPpi: " + node.ppi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3);
+                    } else {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPpi: " + node.ppi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3);
+                    }
+                }
+
+                if(left > 50){
+                    tooltip.style.left = left + "%"
+                    tooltip.style.top = top + "%"
+                    tooltip.classList.add("t_r")
+                } else {
+                    tooltip.style.left = left + "%"
+                    tooltip.style.top = top + "%"
+                    tooltip.classList.add("t_l")
+                }
+
+                tooltip.style.visibility = 'visible'
+                tooltip.style.opacity = 1
+            }
+
+            function hideTooltip() {
+                tooltip = document.getElementById('tooltip')
+                tooltip.classList.remove("t_r")
+                tooltip.classList.remove("t_l")
+                tooltip.style.visibility = 'hidden'
+                tooltip.style.opacity = 0
+            }
+
+            d = 80/(plotData.l_c+plotData.r_c);
+            h = 65/(plotData.depth);
+
+            iter(treeData, 15, 10+d*plotData.l_c, d, h)
+        </script> 
+    </body>
+    </html> 
+    

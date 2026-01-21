@@ -1,0 +1,12 @@
+LICENSE
+MANIFEST.in
+README.md
+pyproject.toml
+setup.py
+slbt.egg-info/PKG-INFO
+slbt.egg-info/SOURCES.txt
+slbt.egg-info/dependency_links.txt
+slbt.egg-info/requires.txt
+slbt.egg-info/top_level.txt
+tests/test_slbt_basic.py
+tests/test_split.py

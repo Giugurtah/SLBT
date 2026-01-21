@@ -1,0 +1,393 @@
+ 
+    <!DOCTYPE html> 
+    <html lang="en"> 
+    <head> 
+        <meta charset="UTF-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>Decision Tree Visualization</title> 
+        <style> 
+            body { font-family: Arial, sans-serif; text-align: center}
+            .tree-container { display: flex; justify-content: center; margin-top: 20px}
+            .node { border: 2px solid blue; border-radius: 100%; background-color: lightcyan; color: lightcyan ;display: inline-block;  position: absolute; width: 24px; height: 24px} 
+            .square { position: absolute; transform: translate(14px, 14px); z-index: -1}
+            .leaf { display: inline-block; font-weight: bolder; position: absolute; line-height: 24px}
+            .d_r:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top right, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .d_l:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top left, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .tooltip { position: absolute; background-color: rgba(0, 0, 0, 0.8); color: white; padding: 8px; border-radius: 5px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.3s; font-size: 14px; width: fit-content}
+            .t_l { transform: translate(35px, -5px)}
+            .t_r { transform: translateX(-100%) translate(-8px, -5px)}
+            .leaf_value{ display: inline-block; font-weight: bolder; position: absolute; line-height: 24px; transform: translate(6px, 30px)}
+            #legend { display: flex; flex-wrap: wrap; gap: 8px; position: absolute; bottom: 3%; width: 100%; justify-content: center; font-family: sans-serif}
+            .legend-item { display: flex; align-items: center; gap: 6px; margin-right: 12px }
+            .color-box { width: 16px; height: 16px; border: 1px solid #000; box-sizing: border-box}
+        </style> 
+    </head> 
+    <body> 
+        <h1>MUSHROOMS</h1> 
+        <div class="tree-container" id="tree"></div> 
+
+        <div id="tooltip" class="tooltip"></div>
+        
+        <script> 
+            const treeData = {
+    "isLeaf": 0,
+    "feature": "odor",
+    "distribution": "e=0.62, p=0.38",
+    "distArray": [
+        0.6180014174344437,
+        0.38199858256555635
+    ],
+    "lift1": "e=0.57, p=1.7",
+    "lift2": "e=1.02, p=0.97",
+    "treshold": "c, f, p",
+    "position": 1,
+    "gpi": 0.9360479828977833,
+    "ppi": 0.9165893993407184,
+    "impurity": 0.4721513309669243,
+    "labels": 5644,
+    "labArray": [
+        "e",
+        "p"
+    ],
+    "children": [
+        {
+            "isLeaf": 1,
+            "distribution": "p=1.0",
+            "distArray": [
+                1.0
+            ],
+            "position": 2,
+            "value": "p",
+            "impurity": 0.0,
+            "labels": 2032,
+            "labArray": [
+                "p"
+            ],
+            "gcr": "p=2.62"
+        },
+        {
+            "isLeaf": 0,
+            "feature": "ring-number",
+            "distribution": "e=0.97, p=0.03",
+            "distArray": [
+                0.9656699889258029,
+                0.03433001107419712
+            ],
+            "lift1": "e=0.04, p=28.04",
+            "lift2": "e=0.99, p=1.17",
+            "treshold": "n, t",
+            "position": 3,
+            "gpi": 0.6264842491203836,
+            "ppi": 0.6263755966203314,
+            "impurity": 0.06630292282768521,
+            "labels": 3612,
+            "labArray": [
+                "e",
+                "p"
+            ],
+            "children": [
+                {
+                    "isLeaf": 0,
+                    "feature": "habitat",
+                    "distribution": "e=0.31, p=0.69",
+                    "distArray": [
+                        0.3076923076923077,
+                        0.6923076923076923
+                    ],
+                    "lift1": "e=0.06, p=1.42",
+                    "lift2": "e=3.12, p=0.06",
+                    "treshold": "d, g, m",
+                    "position": 6,
+                    "gpi": 0.803030303030303,
+                    "ppi": 0.7785723489241074,
+                    "impurity": 0.4260355029585799,
+                    "labels": 156,
+                    "labArray": [
+                        "e",
+                        "p"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 1,
+                            "distribution": "e=0.07, p=0.93",
+                            "distArray": [
+                                0.06896551724137931,
+                                0.9310344827586207
+                            ],
+                            "position": 12,
+                            "value": "p",
+                            "impurity": 0.1284185493460166,
+                            "labels": 116,
+                            "labArray": [
+                                "e",
+                                "p"
+                            ],
+                            "gcr": "e=0.11, p=2.44"
+                        },
+                        {
+                            "isLeaf": 1,
+                            "distribution": "e=1.0",
+                            "distArray": [
+                                1.0
+                            ],
+                            "position": 13,
+                            "value": "e",
+                            "impurity": 0.0,
+                            "labels": 40,
+                            "labArray": [
+                                "e"
+                            ],
+                            "gcr": "e=1.62"
+                        }
+                    ]
+                },
+                {
+                    "isLeaf": 0,
+                    "feature": "population",
+                    "distribution": "e=1.0, p=0.0",
+                    "distArray": [
+                        0.9953703703703703,
+                        0.004629629629629629
+                    ],
+                    "lift1": "e=0.06, p=203.67",
+                    "lift2": "e=1.0, p=1.76",
+                    "treshold": "c",
+                    "position": 7,
+                    "gpi": 1.0,
+                    "ppi": 1.0,
+                    "impurity": 0.00921639231824422,
+                    "labels": 3456,
+                    "labArray": [
+                        "e",
+                        "p"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 1,
+                            "distribution": "p=1.0",
+                            "distArray": [
+                                1.0
+                            ],
+                            "position": 14,
+                            "value": "p",
+                            "impurity": 0.0,
+                            "labels": 16,
+                            "labArray": [
+                                "p"
+                            ],
+                            "gcr": "p=2.62"
+                        },
+                        {
+                            "isLeaf": 1,
+                            "distribution": "e=1.0",
+                            "distArray": [
+                                1.0
+                            ],
+                            "position": 15,
+                            "value": "e",
+                            "impurity": 0.0,
+                            "labels": 3440,
+                            "labArray": [
+                                "e"
+                            ],
+                            "gcr": "e=1.62"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}; 
+            const plotData = {
+    "l_c": 0.5,
+    "r_c": 0.875,
+    "depth": 3,
+    "colors": [
+        "#FF6384",
+        "#36A2EB",
+        "#FFCE56",
+        "#4CAF50",
+        "#9966FF",
+        "#D81B60",
+        "#00ACC1",
+        "#8D6E63",
+        "#FF9800"
+    ],
+    "labels": [
+        "e",
+        "p"
+    ]
+};
+            
+            function iter(node, top, left, d, h) {
+                if(node.isLeaf == 1){
+                    let nodeElement = document.createElement("div")
+                    nodeElement.classList.add("leaf")
+                    nodeElement.style.left = left + "%"
+                    nodeElement.style.top = top + "%"
+
+                    nodeElement.onmouseover = function(event) { showTooltip(event, node, top, left); };
+                    nodeElement.onmouseout = hideTooltip;
+                    
+                    let nodeValue = document.createElement("div")
+                    nodeValue.classList.add("leaf_value")
+                    nodeValue.style.left = left + "%"
+                    nodeValue.style.top = top + "%"
+                    nodeValue.innerText = node.value
+
+                    let canvas = document.createElement("canvas");
+                    canvas.width = 36;
+                    canvas.height = 36;
+                    canvas.style.position = "absolute";
+                    canvas.style.top = "-6px";
+                    canvas.style.left = "-6px";
+                    nodeElement.appendChild(canvas);
+
+                    tree = document.getElementById("tree")
+                    tree.appendChild(nodeElement)
+                    tree.appendChild(nodeValue)
+
+                    if (node.distribution) {
+                        drawPieChart(canvas, node.distArray, node.labArray);
+                    }
+                    return
+                }
+
+                let nodeElement = document.createElement("div")
+                nodeElement.classList.add("node")
+                nodeElement.style.left = left + "%"
+                nodeElement.style.top = top + "%"
+                nodeElement.onmouseover = function(event) { showTooltip(event, node, top, left); };
+                nodeElement.onmouseout = hideTooltip;
+
+                let lbranchElement = document.createElement("div")
+                lbranchElement.classList.add("square")
+                lbranchElement.classList.add("d_l")
+                lbranchElement.style.right = (100-left) + "%"
+                lbranchElement.style.top = top + "%"
+                lbranchElement.style.height = h + "%"
+                lbranchElement.style.width = d/2 + "%"
+
+                let rbranchElement = document.createElement("div")
+                rbranchElement.classList.add("square")
+                rbranchElement.classList.add("d_r")
+                rbranchElement.style.left = left + "%"
+                rbranchElement.style.top = top + "%"
+                rbranchElement.style.height = h + "%"
+                rbranchElement.style.width = d/2 + "%"
+
+                let canvas = document.createElement("canvas");
+                canvas.width = 36;
+                canvas.height = 36;
+                canvas.style.position = "absolute";
+                canvas.style.top = "-6px";
+                canvas.style.left = "-6px";
+                nodeElement.appendChild(canvas);
+
+                tree = document.getElementById("tree")
+                tree.appendChild(nodeElement)
+                tree.appendChild(lbranchElement)
+                tree.appendChild(rbranchElement)
+
+                if (node.distribution) {
+                    drawPieChart(canvas, node.distArray, node.labArray);
+                }
+
+                iter(node.children[0], top+h, left-d/2, d/2, h)
+                iter(node.children[1], top+h, left+d/2, d/2, h)
+                return
+            }
+
+            // Legend
+            const legendContainer = document.createElement('div');
+            legendContainer.id = 'legend';
+
+            for (let i = 0; i < plotData.labels.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = plotData.colors[i];
+
+                const label = document.createElement('span');
+                label.textContent = plotData.labels[i];
+
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legendContainer.appendChild(item);
+            }
+            document.body.appendChild(legendContainer);
+
+            function drawPieChart(canvas, distArray, labArray) {
+                let ctx = canvas.getContext("2d");
+                let total = distArray.reduce((sum, val) => sum + val, 0);
+                let startAngle = 0;
+
+                distArray.forEach((value, index) => {
+                    let sliceAngle = (value / total) * 2 * Math.PI;
+
+                    ctx.beginPath();
+                    ctx.moveTo(18, 18);
+                    ctx.arc(18, 18, 16, startAngle, startAngle + sliceAngle);
+                    ctx.closePath();
+                    plotData.labels.forEach((valueLab, indexLab) => {
+                        if(valueLab == labArray[index]) {
+                            ctx.fillStyle = plotData.colors[indexLab % plotData.colors.length];
+                        }
+                    })
+                    ctx.fill();
+
+                    startAngle += sliceAngle;
+                });
+
+                ctx.beginPath();
+                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                ctx.strokeStyle = "blue";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            function showTooltip(event, node, top, left) {
+                tooltip = document.getElementById('tooltip')
+
+                if(node.isLeaf == 1){
+                    tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels + "\nClass distribution: [" + node.distribution +  "]\nGCR: [" + node.gcr + "]\nImpurty: " + node.impurity.toFixed(3) + "\nPrediction: "+ node.value;
+                } else {
+                    if(node.lift1 && node.lift2) {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nLIFT left: [" + node.lift1 + "]\nLIFT right: [" + node.lift2 + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPpi: " + node.ppi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3);
+                    } else {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPpi: " + node.ppi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3);
+                    }
+                }
+
+                if(left > 50){
+                    tooltip.style.left = left + "%"
+                    tooltip.style.top = top + "%"
+                    tooltip.classList.add("t_r")
+                } else {
+                    tooltip.style.left = left + "%"
+                    tooltip.style.top = top + "%"
+                    tooltip.classList.add("t_l")
+                }
+
+                tooltip.style.visibility = 'visible'
+                tooltip.style.opacity = 1
+            }
+
+            function hideTooltip() {
+                tooltip = document.getElementById('tooltip')
+                tooltip.classList.remove("t_r")
+                tooltip.classList.remove("t_l")
+                tooltip.style.visibility = 'hidden'
+                tooltip.style.opacity = 0
+            }
+
+            d = 80/(plotData.l_c+plotData.r_c);
+            h = 65/(plotData.depth);
+
+            iter(treeData, 15, 10+d*plotData.l_c, d, h)
+        </script> 
+    </body>
+    </html> 
+    

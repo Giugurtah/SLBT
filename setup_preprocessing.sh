@@ -1,0 +1,51 @@
+#!/bin/bash
+# setup_preprocessing.sh
+
+cd /Users/utentesecondario/Desktop/SLBT
+
+# Create directory structure
+mkdir -p slbt/_preprocessing/_backend
+
+# Create __init__.py for _preprocessing
+cat > slbt/_preprocessing/__init__.py << 'EOF'
+# slbt/_preprocessing/__init__.py
+
+"""
+Preprocessing module for SLBT.
+
+This module provides tools for data preprocessing, including
+automatic categorization of continuous variables.
+"""
+
+__all__ = []
+EOF
+
+# Create __init__.py for _backend
+cat > slbt/_preprocessing/_backend/__init__.py << 'EOF'
+# slbt/_preprocessing/_backend/__init__.py
+
+"""
+Backend interface for the Categorizer module.
+"""
+
+from .ctypes_interface import (
+    categorize_fixed_k,
+    categorize_elbow,
+    categorize_silhouette,
+    get_centers,
+    get_sizes,
+)
+
+__all__ = [
+    'categorize_fixed_k',
+    'categorize_elbow',
+    'categorize_silhouette',
+    'get_centers',
+    'get_sizes',
+]
+EOF
+
+echo "✓ Directory structure created"
+echo "Now copy the ctypes_interface.py content to:"
+echo "  slbt/_preprocessing/_backend/ctypes_interface.py"
+
