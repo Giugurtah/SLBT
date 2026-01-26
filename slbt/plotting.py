@@ -186,7 +186,7 @@ def _recurse(node, homogeneity, root_impurity, root_N):
         "treshold": treshold,
         "position": node.position,
         "gpi": float(node.gpi),
-        "ppi": float(node.ppi),
+        "pi": float(node.pi),
         "impurity": float(node.impurity),
         "impurity_decrement": float(node.impurity_decrease),
         "tree_partial_impurity_reduction": float(node.tree_partial_impurity_reduction),
@@ -552,9 +552,9 @@ def plot_html(model, output_file="tree_visualization.html", title="Decision Tree
                     tooltip.innerText = "Id: " + node.position + "\\nN: " + node.labels + "\\nClass distribution: [" + node.distribution +  "]\\nGCR: [" + node.gcr + "]\\nImpurty: " + node.impurity.toFixed(3) + "\\nImpurity decrease: " + node.impurity_decrement.toFixed(3) + "\\nPrediction: "+ node.value;
                 }} else {{
                     if(node.lift1 && node.lift2) {{
-                        tooltip.innerText = "Id: " + node.position + "\\nN: " + node.labels +  "\\nClass distribution: [" + node.distribution + "]\\nLIFT left: [" + node.lift1 + "]\\nLIFT right: [" + node.lift2 + "]\\nFeature: " + node.feature + "\\nThreshold left: [" + node.treshold + "]\\nGpi: " + node.gpi.toFixed(3) + "\\nPpi: " + node.ppi.toFixed(3)  + "\\nImpurty: " + node.impurity.toFixed(3) + "\\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
+                        tooltip.innerText = "Id: " + node.position + "\\nN: " + node.labels +  "\\nClass distribution: [" + node.distribution + "]\\nLIFT left: [" + node.lift1 + "]\\nLIFT right: [" + node.lift2 + "]\\nFeature: " + node.feature + "\\nThreshold left: [" + node.treshold + "]\\nGpi: " + node.gpi.toFixed(3) + "\\nPi: " + node.pi.toFixed(3)  + "\\nImpurty: " + node.impurity.toFixed(3) + "\\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
                     }} else {{
-                        tooltip.innerText = "Id: " + node.position + "\\nN: " + node.labels +  "\\nClass distribution: [" + node.distribution + "]\\nFeature: " + node.feature + "\\nThreshold left: [" + node.treshold + "]\\nGpi: " + node.gpi.toFixed(3) + "\\nPpi: " + node.ppi.toFixed(3)  + "\\nImpurty: " + node.impurity.toFixed(3) + "\\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
+                        tooltip.innerText = "Id: " + node.position + "\\nN: " + node.labels +  "\\nClass distribution: [" + node.distribution + "]\\nFeature: " + node.feature + "\\nThreshold left: [" + node.treshold + "]\\nGpi: " + node.gpi.toFixed(3) + "\\nPi: " + node.pi.toFixed(3)  + "\\nImpurty: " + node.impurity.toFixed(3) + "\\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
                     }}
                 }}
 

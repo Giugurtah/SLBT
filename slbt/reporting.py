@@ -23,7 +23,7 @@ class NodeRecord:
     distribution: Any       # raw distribution (list of floats)
     labels: Any             # label values (list)
     gpi: Optional[float]
-    ppi: Optional[float]
+    pi: Optional[float]
     gcr: Any                # None or list
     lift_left: Any          # None or list/str
     lift_right: Any         # None or list/str
@@ -47,7 +47,7 @@ class TreeReporter:
                 columns=[
                     "id", "node_type", "feature", "threshold", "N",
                     "impurity", "distribution", "labels",
-                    "gpi", "ppi", "gcr", "lift_left", "lift_right",
+                    "gpi", "pi", "gcr", "lift_left", "lift_right",
                 ]
             )
         return pd.DataFrame(asdict(r) for r in self._records)
@@ -94,7 +94,7 @@ class TreeReporter:
             distribution=dist,
             labels=labels,
             gpi=float(node.gpi) if node.gpi is not None else None,
-            ppi=float(node.ppi) if node.ppi is not None else None,
+            pi=float(node.pi) if node.pi is not None else None,
             gcr=gcr,
             lift_left=lift_left,
             lift_right=lift_right,

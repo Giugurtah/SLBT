@@ -144,13 +144,13 @@ double gpi_c(int K, int I, int J, const double *Fs){ //Given F this function ret
 // Out-called from slbt/_tree/split.py
 void slba_c(int K, int KA, int KB, int I, int J, // Input sizes
     const double *Fs_noN, const double *Fs, // Input matrices
-    double *out_ppi, double *out_S, double *out_alpha, double *out_beta // Outputs
+    double *out_pi, double *out_S, double *out_alpha, double *out_beta // Outputs
     ){ //Given F this function returns the split none
     // Algo variables
     double parent_tau;
     double left_tau, right_tau;
     double L = 0, R = 0;
-    double ppi;
+    double pi;
 
     double *F_left  = calloc(K * I * J, sizeof(double));
     double *F_right = calloc(K * I * J, sizeof(double));
@@ -260,16 +260,16 @@ void slba_c(int K, int KA, int KB, int I, int J, // Input sizes
 
     // PPI eval
     if(all_left || all_right){
-        ppi = 0;
+        pi = 0;
     } else {
         left_tau = gpi_c(K, I, J, F_left);
         right_tau = gpi_c(K, I, J, F_right);
 
         // PPI eval
-        ppi = parent_tau - (L*left_tau + R*right_tau);
+        pi = parent_tau - (L*left_tau + R*right_tau);
     }
 
-    *out_ppi = ppi;
+    *out_pi = pi;
     for(int t=0; t<KA; t++){
         for(int i=0; i<I; i++){
             Ski(t,i) = (double)S[t][i];

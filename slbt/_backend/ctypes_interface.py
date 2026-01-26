@@ -35,7 +35,7 @@ _lib.slba_c.argtypes = [
     c_int,                     # J
     ctypes.POINTER(c_double),      # Fs      (flattened K*I*J)
     ctypes.POINTER(c_double),      # Fs_noN      (flattened K*I*J)
-    ctypes.POINTER(c_double),      # out_ppi
+    ctypes.POINTER(c_double),      # out_pi
     ctypes.POINTER(c_double),      # out_S      (K*I)
     ctypes.POINTER(c_double),      # out_alpha  (K*I*2)
     ctypes.POINTER(c_double),      # out_beta   (K*J*2)
@@ -49,7 +49,7 @@ def slba(K: int, KA: int, KB: int, I: int, J: int, FsNoN_flat: np.ndarray, Fs_fl
     """
 
     # --- allocate outputs ---
-    out_ppi   = np.zeros(1, dtype=np.double)
+    out_pi   = np.zeros(1, dtype=np.double)
     out_S     = np.zeros(KA * I, dtype=np.double)
     out_alpha = np.zeros(KA * I * 2, dtype=np.double)
     out_beta  = np.zeros(KB * J * 2, dtype=np.double)
@@ -61,16 +61,16 @@ def slba(K: int, KA: int, KB: int, I: int, J: int, FsNoN_flat: np.ndarray, Fs_fl
         FsNoN_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         Fs_flat.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
 
-        out_ppi.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        out_pi.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         out_S.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         out_alpha.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
         out_beta.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
     )
 
     # --- reshape outputs ---
-    ppi   = out_ppi[0]
+    pi   = out_pi[0]
     S     = out_S.reshape(KA, I)
     alpha = out_alpha.reshape(KA, I, 2)
     beta  = out_beta.reshape(KB, J, 2)
 
-    return ppi, S, alpha, beta
+    return pi, S, alpha, beta

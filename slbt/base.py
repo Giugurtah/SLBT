@@ -40,7 +40,7 @@ class BaseSLBT:
 class Node:
     def __init__(self, 
                  gpi=None, 
-                 ppi=None, 
+                 pi=None, 
                  position=None, 
                  impurity=None,
                  impurity_decrease=None,
@@ -60,7 +60,7 @@ class Node:
                  *,value=None):
         
         self.gpi = gpi
-        self.ppi = ppi
+        self.pi = pi
         self.position = position
         self.feature = feature
         self.treshold = treshold

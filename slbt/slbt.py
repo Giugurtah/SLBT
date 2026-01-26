@@ -103,7 +103,7 @@ class SLBT(BaseSLBT):
                 node.LIFT_1 = None
                 node.LIFT_2 = None
                 node.gpi = None
-                node.ppi = None
+                node.pi = None
 
                 highest_index = 0
                 highest_presence = 0
@@ -157,13 +157,14 @@ class SLBT(BaseSLBT):
 
 
         # Find the best predictor for the current node  
-        best_feature, best_treshold, best_ppi, best_gpi, alpha, beta = self._find_best_predictor(X, y, x_s, gpi_i, gpi)
-        thresholds = strategy.get_treshold_values(best_treshold, np.unique(X[best_feature]), x_s)
+        best_feature, best_treshold, best_pi, best_gpi, alpha, beta = self._find_best_predictor(X, y, x_s, gpi_i, gpi)
 
         #Check the stopping criteria after the best split search
-        node = self._check_criteria_after(y, pos, impurity, distribution, depth, best_gpi, best_ppi, impurity_decrease, tree_partial_impurity_reduction)
+        node = self._check_criteria_after(y, pos, impurity, distribution, depth, best_gpi, best_pi, impurity_decrease, tree_partial_impurity_reduction)
         if(node is not None):
             return node
+
+        thresholds = strategy.get_treshold_values(best_treshold, np.unique(X[best_feature]), x_s)
         
         #Split the dataset 
         indexL, indexR = strategy.split(X[best_feature], x_s, thresholds)
@@ -183,7 +184,7 @@ class SLBT(BaseSLBT):
         # Create the current node
         node = Node(
             gpi=best_gpi,
-            ppi=best_ppi,
+            pi=best_pi,
             position=pos,
             feature=best_feature,
             treshold=thresholds,
@@ -240,10 +241,10 @@ class SLBT(BaseSLBT):
 
             return leaf_node
         return None
-    def _check_criteria_after(self, y, pos, impurity, distribution, depth, best_gpi, best_ppi, impurity_decrease, tree_partial_impurity_reduction):
+    def _check_criteria_after(self, y, pos, impurity, distribution, depth, best_gpi, best_pi, impurity_decrease, tree_partial_impurity_reduction):
         if( best_gpi<self.min_gpi or 
-            best_ppi<self.min_ppi or 
-            best_ppi == 0):
+            best_pi<self.min_ppi or 
+            best_pi < 0.00000001):
 
             # Create a leaf node
             leaf_value = y.mode()[0]
@@ -282,7 +283,7 @@ class SLBT(BaseSLBT):
         best = {
             "feature": None,
             "threshold": None,
-            "ppi": -np.inf,
+            "pi": -np.inf,
             "gpi": -np.inf,
             "alpha": None,
             "beta": None,
@@ -298,11 +299,11 @@ class SLBT(BaseSLBT):
             Fs_noN = _stratified_contingency(current_feature, y, x_s, norm=False)
             Fs = _stratified_contingency(current_feature, y, x_s, norm=True)
 
-            ppi, S, alpha, beta = score(Fs_noN, Fs, self.homogeneity)
-            print("best ppi: ", best["ppi"], " current ppi: ", ppi )
+            pi, S, alpha, beta = score(Fs_noN, Fs, self.homogeneity)
+            print("best pi: ", best["pi"], " current pi: ", pi )
             # Update best split if necessary
-            if ppi > best["ppi"]:
-                best["ppi"] = ppi
+            if pi > best["pi"]:
+                best["pi"] = pi
                 best["feature"] = str(current_feature.name)
                 best["threshold"] = S
                 best["alpha"] = alpha
@@ -311,11 +312,11 @@ class SLBT(BaseSLBT):
 
         print("Best split found on feature:", best["feature"]) #TODO da cancellare
         print("With threshold:\n", best["threshold"]) #TODO da cancellare
-        print("With PPI value:", best["ppi"]) #TODO da cancellare
+        print("With PPI value:", best["pi"]) #TODO da cancellare
         print("With GPI value:", best["gpi"]) #TODO da cancellare
         print("Alpha:\n", best["alpha"]) #TODO da cancellare
         print("Beta:\n", best["beta"]) #TODO da cancellare
-        return  best["feature"], best["threshold"], best["ppi"], best["gpi"], best["alpha"], best["beta"]
+        return  best["feature"], best["threshold"], best["pi"], best["gpi"], best["alpha"], best["beta"]
 
     #*---------Update functions---------
     def _get_gcr(self, distribution, labels):
@@ -378,7 +379,7 @@ class SLBT(BaseSLBT):
 
             # the features pertaining an internal node are dropped
             node.gpi = None
-            node.ppi = None
+            node.pi = None
             node.feature = None
             node.treshold = None
             node.LIFT_1 = None
