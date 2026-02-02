@@ -1,0 +1,1135 @@
+ 
+    <!DOCTYPE html> 
+    <html lang="en"> 
+    <head> 
+        <meta charset="UTF-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>Decision Tree Visualization</title> 
+        <style> 
+            body { font-family: Arial, sans-serif; text-align: center}
+            .tree-container { display: flex; justify-content: center; margin-top: 20px}
+            .node { border: 2px solid blue; border-radius: 100%; background-color: lightcyan; color: lightcyan ;display: inline-block;  position: absolute; width: 24px; height: 24px} 
+            .square { position: absolute; transform: translate(14px, 14px); z-index: -1}
+            .leaf { display: inline-block; font-weight: bolder; position: absolute; line-height: 24px}
+            .d_r:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top left, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .d_l:after { content: ""; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: linear-gradient(to top right, transparent calc(50% - 1px), blue, transparent calc(50% + 1px))}
+            .tooltip { position: absolute; z-index: 1; background-color: rgba(0, 0, 0, 0.8); color: white; padding: 8px; border-radius: 5px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.3s; font-size: 14px; width: fit-content}
+            .t_l { transform: translate(35px, -5px)}
+            .t_r { transform: translateX(-100%) translate(-8px, -5px)}
+            .leaf_value{ display: inline-block; font-weight: bolder; position: absolute; line-height: 24px; transform: translate(6px, 30px)}
+            #legend { display: flex; flex-wrap: wrap; gap: 8px; position: absolute; bottom: 3%; width: 100%; justify-content: center; font-family: sans-serif}
+            .legend-item { display: flex; align-items: center; gap: 6px; margin-right: 12px }
+            .color-box { width: 16px; height: 16px; border: 1px solid #000; box-sizing: border-box}
+            .impurity-line { position: absolute; width: 90%; border-top: 1px dashed #cccccc; z-index: -2; transition: border-color 0.3s, z-index 0s; transform: translateY(12px);}
+            .suggested-line { position: absolute; width: 90%; border-top: 1px dashed #e61414; z-index: -2; transition: border-color 0.3s, z-index 0s; transform: translateY(12px);}
+            .impurity-line.highlighted {  border-top: 2px dashed #4a90e2; z-index: -1;}
+            .suggested-line.highlighted {  border-top: 2px dashed #e61414; z-index: -1;}
+            .impurity-label-left {  position: absolute; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.8); padding: 2px 5px; border-radius: 3px; transition: color 0.3s; background-color: 0.3s; z-index: 0s; font-weight: 0.3s; right: 0%; transform: translateY(12px);}
+            .impurity-label-right {position: absolute; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.8); padding: 2px 5px; border-radius: 3px; transition: color 0.3s; background-color: 0.3s; z-index: 0s; font-weight: 0.3s; left: 0%; transform: translateY(12px);}
+            .suggested-label-left {  position: absolute; font-size: 11px; color: #e61414; background-color: rgba(255, 255, 255, 0.8); padding: 2px 5px; border-radius: 3px; transition: color 0.3s; background-color: 0.3s; z-index: 1; font-weight: 0.3s; right: 0%; transform: translateY(12px);}
+            .suggested-label-right { position: absolute; font-size: 11px; color: #e61414; background-color: rgba(255, 255, 255, 0.8); padding: 2px 5px; border-radius: 3px; transition: color 0.3s; background-color: 0.3s; z-index: 1; font-weight: 0.3s; left: 0%; transform: translateY(12px);}
+            .impurity-label-left.highlighted { color: #ffffff; background-color: rgba(74, 144, 226, 0.95); font-weight: bold; z-index: 11;}
+            .impurity-label-right.highlighted { color: #ffffff; background-color: rgba(74, 144, 226, 0.95); font-weight: bold; z-index: 11;}
+            .suggested-label-left.highlighted {color: #ffffff; background-color: #e61414; font-weight: bold; z-index: 11;}
+            .suggested-label-right.highlighted { color: #ffffff; background-color: #e61414; font-weight: bold; z-index: 11;}
+            .square.highlighted-branch:after {background: linear-gradient(to top left, transparent calc(50% - 1px), orange, transparent calc(50% + 1px)) !important;}
+            .d_l.highlighted-branch:after {background: linear-gradient(to top right, transparent calc(50% - 1px), orange, transparent calc(50% + 1px)) !important;}
+        </style>
+    </head> 
+    <body> 
+        <h1>LBT ALS PRUNED</h1> 
+        <div class="tree-container" id="tree"></div> 
+
+        <div id="tooltip" class="tooltip"></div>
+        
+        <script> 
+            const treeData = {
+    "isLeaf": 0,
+    "suggested": 0,
+    "feature": "VENTILATION",
+    "distribution": "0=0.0, 1=0.17, 2=0.22, 3=0.29, 4A=0.01, 4B=0.3",
+    "distArray": [
+        0.00424929178470255,
+        0.17280453257790368,
+        0.21954674220963172,
+        0.29320113314447593,
+        0.014164305949008499,
+        0.29603399433427763
+    ],
+    "lift1": "0=13.08, 1=0.66, 2=1.41, 3=0.37, 4A=17.25, 4B=0.56",
+    "lift2": "0=12.88, 1=1.4, 2=0.64, 3=0.96, 4A=9.53, 4B=0.49",
+    "treshold": "1",
+    "position": 1,
+    "gpi": 0.22914102373129144,
+    "pi": 0.21636950549815065,
+    "impurity": 0.7481161071832693,
+    "impurity_decrement": 0.0,
+    "tree_partial_impurity_reduction": 0.0,
+    "labels": 1412,
+    "labArray": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4A",
+        "4B"
+    ],
+    "children": [
+        {
+            "isLeaf": 0,
+            "suggested": 0,
+            "feature": "FVC",
+            "distribution": "1=0.04, 2=0.08, 3=0.12, 4A=0.01, 4B=0.75",
+            "distArray": [
+                0.04263565891472868,
+                0.0755813953488372,
+                0.12209302325581395,
+                0.013565891472868217,
+                0.7461240310077519
+            ],
+            "lift1": "1=3.53, 2=3.17, 3=1.75, 4A=18.49, 4B=0.19",
+            "lift2": "1=0.67, 2=0.74, 3=1.01, 4A=28.0, 4B=0.55",
+            "treshold": ">80",
+            "position": 2,
+            "gpi": 0.10233231822200707,
+            "pi": 0.09061608779975724,
+            "impurity": 0.42067784387957463,
+            "impurity_decrement": 0.7945076593857224,
+            "tree_partial_impurity_reduction": 0.8369872454999892,
+            "labels": 516,
+            "labArray": [
+                "1",
+                "2",
+                "3",
+                "4A",
+                "4B"
+            ],
+            "children": [
+                {
+                    "isLeaf": 1,
+                    "suggested": 0,
+                    "distribution": "1=0.16, 2=0.18, 3=0.24, 4B=0.42",
+                    "distArray": [
+                        0.16037735849056603,
+                        0.1792452830188679,
+                        0.2358490566037736,
+                        0.42452830188679247
+                    ],
+                    "position": 4,
+                    "value": "4B",
+                    "impurity": 0.7063011747953007,
+                    "labels": 106,
+                    "impurity_decrement": 0.9291251599448345,
+                    "tree_partial_impurity_reduction": 0.9400597498444574,
+                    "labArray": [
+                        "1",
+                        "2",
+                        "3",
+                        "4B"
+                    ],
+                    "gcr": "1=0.93, 2=0.82, 3=0.8, 4B=1.43"
+                },
+                {
+                    "isLeaf": 0,
+                    "suggested": 0,
+                    "feature": "CUT_OFF_LABILITY_SCALE",
+                    "distribution": "1=0.01, 2=0.05, 3=0.09, 4A=0.02, 4B=0.83",
+                    "distArray": [
+                        0.012195121951219513,
+                        0.04878048780487805,
+                        0.09268292682926829,
+                        0.01707317073170732,
+                        0.8292682926829268
+                    ],
+                    "lift1": "1=10.01, 2=2.66, 3=3.24, 4A=17.51, 4B=0.18",
+                    "lift2": "1=11.22, 2=2.87, 3=4.07, 4A=9.27, 4B=0.23",
+                    "treshold": "1",
+                    "position": 5,
+                    "gpi": 0.010367833489108906,
+                    "pi": 0.010367833489108896,
+                    "impurity": 0.30090422367638314,
+                    "impurity_decrement": 0.8832092523956712,
+                    "tree_partial_impurity_reduction": 0.9119869773229495,
+                    "labels": 410,
+                    "labArray": [
+                        "1",
+                        "2",
+                        "3",
+                        "4A",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 1,
+                            "suggested": 0,
+                            "distribution": "2=0.01, 3=0.15, 4A=0.05, 4B=0.8",
+                            "distArray": [
+                                0.0078125,
+                                0.1484375,
+                                0.046875,
+                                0.796875
+                            ],
+                            "position": 10,
+                            "value": "4B",
+                            "impurity": 0.3406982421875,
+                            "labels": 128,
+                            "impurity_decrement": 0.9587165331815451,
+                            "tree_partial_impurity_reduction": 0.9470095578296969,
+                            "labArray": [
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "gcr": "2=0.04, 3=0.51, 4A=3.31, 4B=2.69"
+                        },
+                        {
+                            "isLeaf": 1,
+                            "suggested": 1,
+                            "distribution": "1=0.02, 2=0.07, 3=0.07, 4A=0.0, 4B=0.84",
+                            "distArray": [
+                                0.01773049645390071,
+                                0.0673758865248227,
+                                0.0673758865248227,
+                                0.0035460992907801418,
+                                0.8439716312056738
+                            ],
+                            "position": 11,
+                            "value": "4B",
+                            "impurity": 0.27830592022534095,
+                            "labels": 282,
+                            "impurity_decrement": 0.9257035862383564,
+                            "tree_partial_impurity_reduction": 0.9332534165754864,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "gcr": "1=0.1, 2=0.31, 3=0.23, 4A=0.25, 4B=2.85"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "isLeaf": 0,
+            "suggested": 0,
+            "feature": "MRC_Bulbar",
+            "distribution": "0=0.01, 1=0.25, 2=0.3, 3=0.39, 4A=0.01, 4B=0.04",
+            "distArray": [
+                0.006696428571428571,
+                0.24776785714285715,
+                0.30245535714285715,
+                0.39174107142857145,
+                0.014508928571428572,
+                0.036830357142857144
+            ],
+            "lift1": "0=5.0, 1=0.34, 2=0.45, 3=0.91, 4A=11.84, 4B=5.91",
+            "lift2": "0=6.54, 1=1.84, 2=0.51, 3=0.27, 4A=6.34, 4B=4.06",
+            "treshold": "0, 1, 2",
+            "position": 3,
+            "gpi": 0.08291010034547874,
+            "pi": 0.08044553700871863,
+            "impurity": 0.6920589524872449,
+            "impurity_decrement": 0.4129874333196946,
+            "tree_partial_impurity_reduction": 0.5524098388792344,
+            "labels": 896,
+            "labArray": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4A",
+                "4B"
+            ],
+            "children": [
+                {
+                    "isLeaf": 0,
+                    "suggested": 0,
+                    "feature": "VENTILATION",
+                    "distribution": "0=0.0, 1=0.12, 2=0.24, 3=0.56, 4A=0.03, 4B=0.06",
+                    "distArray": [
+                        0.004291845493562232,
+                        0.11587982832618025,
+                        0.23605150214592274,
+                        0.555793991416309,
+                        0.027896995708154508,
+                        0.060085836909871244
+                    ],
+                    "lift1": "0=12.69, 1=0.86, 2=0.87, 3=0.61, 4A=6.51, 4B=2.01",
+                    "lift2": "0=11.66, 1=0.86, 2=0.51, 3=0.24, 4A=12.92, 4B=3.91",
+                    "treshold": "0, 2",
+                    "position": 6,
+                    "gpi": 0.07989897240132728,
+                    "pi": 0.07499747103900956,
+                    "impurity": 0.6175376227228351,
+                    "impurity_decrement": 0.7275758301080729,
+                    "tree_partial_impurity_reduction": 0.7530357640900217,
+                    "labels": 466,
+                    "labArray": [
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4A",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 0,
+                            "suggested": 0,
+                            "feature": "PUMNS_UP",
+                            "distribution": "0=0.0, 1=0.12, 2=0.25, 3=0.58, 4A=0.03, 4B=0.02",
+                            "distArray": [
+                                0.004464285714285714,
+                                0.11830357142857142,
+                                0.24553571428571427,
+                                0.578125,
+                                0.029017857142857144,
+                                0.024553571428571428
+                            ],
+                            "lift1": "0=15.75, 1=1.04, 2=1.31, 3=0.27, 4A=7.91, 4B=4.01",
+                            "lift2": "0=19.23, 1=1.24, 2=0.77, 3=0.31, 4A=8.61, 4B=5.99",
+                            "treshold": "0, 1",
+                            "position": 12,
+                            "gpi": 0.07640347018144279,
+                            "pi": 0.07429534901661411,
+                            "impurity": 0.590023118622449,
+                            "impurity_decrement": 0.7497677155836912,
+                            "tree_partial_impurity_reduction": 0.7953862822080624,
+                            "labels": 448,
+                            "labArray": [
+                                "0",
+                                "1",
+                                "2",
+                                "3",
+                                "4A",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "suggested": 0,
+                                    "feature": "Clinical_onset_c",
+                                    "distribution": "1=0.14, 2=0.36, 3=0.43, 4A=0.04, 4B=0.03",
+                                    "distArray": [
+                                        0.14049586776859505,
+                                        0.359504132231405,
+                                        0.4297520661157025,
+                                        0.0371900826446281,
+                                        0.03305785123966942
+                                    ],
+                                    "lift1": "1=0.68, 2=0.47, 3=0.59, 4A=8.86, 4B=4.59",
+                                    "lift2": "1=0.52, 2=1.18, 3=0.31, 4A=4.89, 4B=5.66",
+                                    "treshold": "bulbar, multiple",
+                                    "position": 24,
+                                    "gpi": 0.03402718067181265,
+                                    "pi": 0.03247351318638884,
+                                    "impurity": 0.6638549279420806,
+                                    "impurity_decrement": 0.8479155374418589,
+                                    "tree_partial_impurity_reduction": 0.9009032202698933,
+                                    "labels": 242,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "1=0.25, 2=0.23, 3=0.33, 4A=0.14, 4B=0.05",
+                                            "distArray": [
+                                                0.25,
+                                                0.234375,
+                                                0.328125,
+                                                0.140625,
+                                                0.046875
+                                            ],
+                                            "position": 48,
+                                            "value": "3",
+                                            "impurity": 0.7529296875,
+                                            "labels": 64,
+                                            "impurity_decrement": 0.954382582705799,
+                                            "tree_partial_impurity_reduction": 0.9470095578296969,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=1.45, 2=1.07, 3=1.12, 4A=9.93, 4B=0.16"
+                                        },
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "1=0.1, 2=0.4, 3=0.47, 4B=0.03",
+                                            "distArray": [
+                                                0.10112359550561797,
+                                                0.4044943820224719,
+                                                0.46629213483146065,
+                                                0.028089887640449437
+                                            ],
+                                            "position": 49,
+                                            "value": "3",
+                                            "impurity": 0.6079409165509406,
+                                            "labels": 178,
+                                            "impurity_decrement": 0.8975580883521009,
+                                            "tree_partial_impurity_reduction": 0.9273186586857181,
+                                            "labArray": [
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "gcr": "1=0.59, 2=1.84, 3=1.59, 4B=0.09"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 0,
+                                    "suggested": 0,
+                                    "feature": "MRC_UL",
+                                    "distribution": "0=0.01, 1=0.09, 2=0.11, 3=0.75, 4A=0.02, 4B=0.01",
+                                    "distArray": [
+                                        0.009708737864077669,
+                                        0.09223300970873786,
+                                        0.11165048543689321,
+                                        0.7524271844660194,
+                                        0.019417475728155338,
+                                        0.014563106796116505
+                                    ],
+                                    "lift1": "0=8.51, 1=1.17, 2=1.22, 3=0.26, 4A=9.96, 4B=19.57",
+                                    "lift2": "0=10.46, 1=1.28, 2=1.35, 3=0.25, 4A=9.38, 4B=17.87",
+                                    "treshold": "0, 1",
+                                    "position": 25,
+                                    "gpi": 0.05139461902662027,
+                                    "pi": 0.05105623803092217,
+                                    "impurity": 0.4121971910641908,
+                                    "impurity_decrement": 0.9196161975182741,
+                                    "tree_partial_impurity_reduction": 0.9273186586857181,
+                                    "labels": 206,
+                                    "labArray": [
+                                        "0",
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4A",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "2=0.07, 3=0.87, 4A=0.02, 4B=0.03",
+                                            "distArray": [
+                                                0.07446808510638298,
+                                                0.8723404255319149,
+                                                0.02127659574468085,
+                                                0.031914893617021274
+                                            ],
+                                            "position": 50,
+                                            "value": "3",
+                                            "impurity": 0.23200543232231766,
+                                            "labels": 94,
+                                            "impurity_decrement": 0.9793546473597456,
+                                            "tree_partial_impurity_reduction": 0.9506366522923775,
+                                            "labArray": [
+                                                "2",
+                                                "3",
+                                                "4A",
+                                                "4B"
+                                            ],
+                                            "gcr": "2=0.34, 3=2.98, 4A=1.5, 4B=0.11"
+                                        },
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "0=0.02, 1=0.17, 2=0.14, 3=0.65, 4A=0.02",
+                                            "distArray": [
+                                                0.017857142857142856,
+                                                0.16964285714285715,
+                                                0.14285714285714285,
+                                                0.6517857142857143,
+                                                0.017857142857142856
+                                            ],
+                                            "position": 51,
+                                            "value": "3",
+                                            "impurity": 0.5253507653061223,
+                                            "labels": 112,
+                                            "impurity_decrement": 0.9442989105116205,
+                                            "tree_partial_impurity_reduction": 0.945379041427989,
+                                            "labArray": [
+                                                "0",
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4A"
+                                            ],
+                                            "gcr": "0=4.2, 1=0.98, 2=0.65, 3=2.22, 4A=1.26"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "isLeaf": 1,
+                            "suggested": 0,
+                            "distribution": "1=0.06, 4B=0.94",
+                            "distArray": [
+                                0.05555555555555555,
+                                0.9444444444444444
+                            ],
+                            "position": 13,
+                            "value": "4B",
+                            "impurity": 0.1049382716049383,
+                            "labels": 18,
+                            "impurity_decrement": 0.9982118550938143,
+                            "tree_partial_impurity_reduction": 0.9510228272296242,
+                            "labArray": [
+                                "1",
+                                "4B"
+                            ],
+                            "gcr": "1=0.32, 4B=3.19"
+                        }
+                    ]
+                },
+                {
+                    "isLeaf": 0,
+                    "suggested": 0,
+                    "feature": "MRC_UL",
+                    "distribution": "0=0.01, 1=0.39, 2=0.37, 3=0.21, 4B=0.01",
+                    "distArray": [
+                        0.009302325581395349,
+                        0.39069767441860465,
+                        0.3744186046511628,
+                        0.21395348837209302,
+                        0.011627906976744186
+                    ],
+                    "lift1": "0=8.87, 1=0.26, 2=0.69, 3=1.82, 4B=14.54",
+                    "lift2": "0=4.2, 1=1.76, 2=0.21, 3=0.36, 4B=10.11",
+                    "treshold": "1",
+                    "position": 7,
+                    "gpi": 0.05493477319504212,
+                    "pi": 0.05109314775128073,
+                    "impurity": 0.6611681990265008,
+                    "impurity_decrement": 0.7308609530737579,
+                    "tree_partial_impurity_reduction": 0.7635268498852201,
+                    "labels": 430,
+                    "labArray": [
+                        "0",
+                        "1",
+                        "2",
+                        "3",
+                        "4B"
+                    ],
+                    "children": [
+                        {
+                            "isLeaf": 1,
+                            "suggested": 0,
+                            "distribution": "1=0.14, 2=0.57, 3=0.28, 4B=0.01",
+                            "distArray": [
+                                0.14423076923076922,
+                                0.5673076923076923,
+                                0.27884615384615385,
+                                0.009615384615384616
+                            ],
+                            "position": 14,
+                            "value": "2",
+                            "impurity": 0.5795118343195267,
+                            "labels": 104,
+                            "impurity_decrement": 0.942945231647201,
+                            "tree_partial_impurity_reduction": 0.9420724185278152,
+                            "labArray": [
+                                "1",
+                                "2",
+                                "3",
+                                "4B"
+                            ],
+                            "gcr": "1=0.83, 2=2.58, 3=0.95, 4B=0.03"
+                        },
+                        {
+                            "isLeaf": 0,
+                            "suggested": 0,
+                            "feature": "PUMNS_LL",
+                            "distribution": "0=0.01, 1=0.47, 2=0.31, 3=0.19, 4B=0.01",
+                            "distArray": [
+                                0.012269938650306749,
+                                0.46932515337423314,
+                                0.3128834355828221,
+                                0.19325153374233128,
+                                0.012269938650306749
+                            ],
+                            "lift1": "0=2.65, 1=1.39, 2=0.42, 3=0.54, 4B=6.4",
+                            "lift2": "0=4.64, 1=0.32, 2=0.9, 3=1.47, 4B=18.21",
+                            "treshold": "0, 1, 2",
+                            "position": 15,
+                            "gpi": 0.06458090300689147,
+                            "pi": 0.05915631624462659,
+                            "impurity": 0.6441905980654146,
+                            "impurity_decrement": 0.8011945526695099,
+                            "tree_partial_impurity_reduction": 0.8728492201411683,
+                            "labels": 326,
+                            "labArray": [
+                                "0",
+                                "1",
+                                "2",
+                                "3",
+                                "4B"
+                            ],
+                            "children": [
+                                {
+                                    "isLeaf": 0,
+                                    "suggested": 0,
+                                    "feature": "Age_at_onset",
+                                    "distribution": "0=0.01, 1=0.51, 2=0.33, 3=0.14, 4B=0.01",
+                                    "distArray": [
+                                        0.01384083044982699,
+                                        0.5086505190311419,
+                                        0.328719723183391,
+                                        0.1384083044982699,
+                                        0.010380622837370242
+                                    ],
+                                    "lift1": "0=2.3, 1=1.59, 2=0.13, 3=0.54, 4B=3.96",
+                                    "lift2": "0=6.63, 1=0.3, 2=0.74, 3=1.49, 4B=29.26",
+                                    "treshold": "0, 1",
+                                    "position": 30,
+                                    "gpi": 0.05215041070854628,
+                                    "pi": 0.047103285822251685,
+                                    "impurity": 0.6137618084074663,
+                                    "impurity_decrement": 0.8320832571487833,
+                                    "tree_partial_impurity_reduction": 0.8838753191306773,
+                                    "labels": 289,
+                                    "labArray": [
+                                        "0",
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4B"
+                                    ],
+                                    "children": [
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "0=0.02, 1=0.66, 2=0.22, 3=0.11",
+                                            "distArray": [
+                                                0.01680672268907563,
+                                                0.6554621848739496,
+                                                0.2184873949579832,
+                                                0.1092436974789916
+                                            ],
+                                            "position": 60,
+                                            "value": "1",
+                                            "impurity": 0.5104159310783136,
+                                            "labels": 119,
+                                            "impurity_decrement": 0.9425000482267953,
+                                            "tree_partial_impurity_reduction": 0.9420724185278152,
+                                            "labArray": [
+                                                "0",
+                                                "1",
+                                                "2",
+                                                "3"
+                                            ],
+                                            "gcr": "0=3.96, 1=3.79, 2=1.0, 3=0.37"
+                                        },
+                                        {
+                                            "isLeaf": 1,
+                                            "suggested": 0,
+                                            "distribution": "0=0.01, 1=0.41, 2=0.41, 3=0.16, 4B=0.02",
+                                            "distArray": [
+                                                0.011764705882352941,
+                                                0.40588235294117647,
+                                                0.40588235294117647,
+                                                0.1588235294117647,
+                                                0.01764705882352941
+                                            ],
+                                            "position": 61,
+                                            "value": "1",
+                                            "impurity": 0.6448442906574394,
+                                            "labels": 170,
+                                            "impurity_decrement": 0.8962232469740165,
+                                            "tree_partial_impurity_reduction": 0.9273186586857181,
+                                            "labArray": [
+                                                "0",
+                                                "1",
+                                                "2",
+                                                "3",
+                                                "4B"
+                                            ],
+                                            "gcr": "0=2.77, 1=2.35, 2=1.85, 3=0.54, 4B=0.06"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "isLeaf": 1,
+                                    "suggested": 0,
+                                    "distribution": "1=0.16, 2=0.19, 3=0.62, 4B=0.03",
+                                    "distArray": [
+                                        0.16216216216216217,
+                                        0.1891891891891892,
+                                        0.6216216216216216,
+                                        0.02702702702702703
+                                    ],
+                                    "position": 31,
+                                    "value": "3",
+                                    "impurity": 0.5507669831994157,
+                                    "labels": 37,
+                                    "impurity_decrement": 0.980708503444553,
+                                    "tree_partial_impurity_reduction": 0.9506366522923775,
+                                    "labArray": [
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4B"
+                                    ],
+                                    "gcr": "1=0.94, 2=0.86, 3=2.12, 4B=0.09"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}; 
+            const plotData = {
+    "l_c": 0.75,
+    "r_c": 0.9375,
+    "depth": 5,
+    "max_imp_decrease": 0.9982118550938143,
+    "colors": [
+        "#FF6384",
+        "#36A2EB",
+        "#FFCE56",
+        "#4CAF50",
+        "#9966FF",
+        "#D81B60",
+        "#00ACC1",
+        "#8D6E63",
+        "#FF9800"
+    ],
+    "labels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4A",
+        "4B"
+    ]
+};
+            
+            function iter(node, left, d, h, prev_impurity) {
+                let impurityLineElement = document.createElement("div");
+                impurityLineElement.style.top = (15 + node.impurity_decrement * h) + "%";
+                impurityLineElement.setAttribute("data-node-id", node.position); 
+                
+                let impurityLabelLeft = document.createElement("div");
+                impurityLabelLeft.style.top = (15 + node.impurity_decrement * h - 1) + "%";
+                impurityLabelLeft.innerText = "V_t(T): " + node.impurity_decrement.toFixed(3);
+                impurityLabelLeft.setAttribute("data-node-id", node.position); 
+
+                let impurityLabelRight = document.createElement("div");
+                impurityLabelRight.style.top = (15 + node.impurity_decrement * h - 1) + "%";
+                impurityLabelRight.innerText = "V(T): " + node.tree_partial_impurity_reduction.toFixed(3);
+                impurityLabelRight.setAttribute("data-node-id", node.position); 
+
+                if(node.suggested == 1) {
+                    impurityLineElement.classList.add("suggested-line");
+                    impurityLabelLeft.classList.add("suggested-label-left");
+                    impurityLabelRight.classList.add("suggested-label-right");
+                } else {
+                    impurityLineElement.classList.add("impurity-line");
+                    impurityLabelLeft.classList.add("impurity-label-left");
+                    impurityLabelRight.classList.add("impurity-label-right");
+                }
+
+                tree.appendChild(impurityLabelLeft);
+                tree.appendChild(impurityLabelRight);
+                tree.appendChild(impurityLineElement);
+
+                if(node.impurity_decrement != 0.0){
+                    if(node.position % 2 === 0){
+                        let rbranchElement = document.createElement("div")
+                        rbranchElement.classList.add("square")
+                        rbranchElement.classList.add("d_r")
+                        rbranchElement.style.left = left + "%"
+                        rbranchElement.style.top = 15 + prev_impurity*h + "%"
+                        rbranchElement.style.height = (node.impurity_decrement-prev_impurity)*h + "%"
+                        rbranchElement.style.width = d + "%"
+                        rbranchElement.setAttribute("data-node-id", node.position);  
+                        rbranchElement.setAttribute("data-impurity-decrease", node.impurity_decrement);  
+
+
+                        tree.appendChild(rbranchElement)
+                    } else {
+                        let lbranchElement = document.createElement("div")
+                        lbranchElement.classList.add("square")
+                        lbranchElement.classList.add("d_l")
+                        lbranchElement.style.right = (100-left) + "%"
+                        lbranchElement.style.top = 15 + prev_impurity*h + "%"
+                        lbranchElement.style.height = (node.impurity_decrement-prev_impurity)*h + "%"
+                        lbranchElement.style.width = d + "%"
+                        lbranchElement.setAttribute("data-node-id", node.position);  
+                        lbranchElement.setAttribute("data-impurity-decrease", node.impurity_decrement); 
+
+                        tree.appendChild(lbranchElement) 
+                    }
+                }
+                if(node.isLeaf == 1){
+                    let nodeElement = document.createElement("div")
+                    nodeElement.classList.add("leaf")
+                    nodeElement.style.left = left + "%"
+                    nodeElement.style.top = 15 + node.impurity_decrement*h + "%"
+                    nodeElement.setAttribute("data-node-id", node.position);  
+                    nodeElement.setAttribute("data-impurity-decrease", node.impurity_decrement); 
+
+                    nodeElement.onmouseover = function(event) {
+                        showTooltip(event, node, 15 + node.impurity_decrement*h, left); 
+                        highlightImpurityLine(node.position);  
+                        highlightSubtree(node.impurity_decrement);  // ← AGGIUNTO
+                    };
+                    nodeElement.onmouseout = function() {
+                        hideTooltip();
+                        unhighlightImpurityLine(node.position); 
+                        unhighlightSubtree();  // ← AGGIUNTO
+                    };
+                    
+                    let nodeValue = document.createElement("div")
+                    nodeValue.classList.add("leaf_value")
+                    nodeValue.style.left = left + "%"
+                    nodeValue.style.top = 15 + node.impurity_decrement*h + "%"
+                    nodeValue.innerText = node.value
+
+                    let canvas = document.createElement("canvas");
+                    canvas.width = 36;
+                    canvas.height = 36;
+                    canvas.style.position = "absolute";
+                    canvas.style.top = "-6px";
+                    canvas.style.left = "-6px";
+                    nodeElement.appendChild(canvas);
+
+                    tree = document.getElementById("tree")
+                    tree.appendChild(nodeElement)
+                    tree.appendChild(nodeValue)
+
+                    if (node.distribution) {
+                        drawPieChart(canvas, node.distArray, node.labArray);
+                    }
+                    return
+                }
+
+                let nodeElement = document.createElement("div")
+                nodeElement.classList.add("node")
+                nodeElement.style.left = left + "%"
+                nodeElement.style.top = 15 + node.impurity_decrement*h + "%"
+                
+                nodeElement.setAttribute("data-node-id", node.position); 
+                nodeElement.setAttribute("data-impurity-decrease", node.impurity_decrement);  // ← AGGIUNTO
+
+                nodeElement.onmouseover = function(event) {
+                    showTooltip(event, node, 15 + node.impurity_decrement*h, left); 
+                    highlightImpurityLine(node.position);  
+                    highlightSubtree(node.impurity_decrement);  // ← AGGIUNTO
+                };
+                nodeElement.onmouseout = function() {
+                    hideTooltip();
+                    unhighlightImpurityLine(node.position);
+                    unhighlightSubtree();  // ← AGGIUNTO
+                };
+
+                let canvas = document.createElement("canvas");
+                canvas.width = 36;
+                canvas.height = 36;
+                canvas.style.position = "absolute";
+                canvas.style.top = "-6px";
+                canvas.style.left = "-6px";
+                nodeElement.appendChild(canvas);
+
+                tree = document.getElementById("tree")
+                tree.appendChild(nodeElement)
+
+                if (node.distribution) {
+                    drawPieChart(canvas, node.distArray, node.labArray);
+                }
+
+                iter(node.children[0], left-d/2, d/2, h, node.impurity_decrement)
+                iter(node.children[1], left+d/2, d/2, h, node.impurity_decrement)
+                return
+            }
+
+            // Legend
+            const legendContainer = document.createElement('div');
+            legendContainer.id = 'legend';
+
+            for (let i = 0; i < plotData.labels.length; i++) {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'color-box';
+                colorBox.style.backgroundColor = plotData.colors[i];
+
+                const label = document.createElement('span');
+                label.textContent = plotData.labels[i];
+
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legendContainer.appendChild(item);
+            }
+            document.body.appendChild(legendContainer);
+
+            function drawPieChart(canvas, distArray, labArray) {
+                let ctx = canvas.getContext("2d");
+                let total = distArray.reduce((sum, val) => sum + val, 0);
+                let startAngle = 0;
+
+                distArray.forEach((value, index) => {
+                    let sliceAngle = (value / total) * 2 * Math.PI;
+
+                    ctx.beginPath();
+                    ctx.moveTo(18, 18);
+                    ctx.arc(18, 18, 16, startAngle, startAngle + sliceAngle);
+                    ctx.closePath();
+                    plotData.labels.forEach((valueLab, indexLab) => {
+                        if(valueLab == labArray[index]) {
+                            ctx.fillStyle = plotData.colors[indexLab % plotData.colors.length];
+                        }
+                    })
+                    ctx.fill();
+
+                    startAngle += sliceAngle;
+                });
+
+                ctx.beginPath();
+                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                ctx.strokeStyle = "blue";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            function highlightImpurityLine(nodeId) {
+                // If the line is not suggested
+                const lines = document.querySelectorAll('.impurity-line[data-node-id="' + nodeId + '"]');
+                lines.forEach(line => {
+                    line.classList.add('highlighted');
+                });
+                
+                const labels_l = document.querySelectorAll('.impurity-label-left[data-node-id="' + nodeId + '"]');
+                labels_l.forEach(label => {
+                    label.classList.add('highlighted');
+                });
+
+                const labels_r = document.querySelectorAll('.impurity-label-right[data-node-id="' + nodeId + '"]');
+                labels_r.forEach(label => {
+                    label.classList.add('highlighted');
+                });
+
+                // If the line is suggested
+                const s_lines = document.querySelectorAll('.suggested-line[data-node-id="' + nodeId + '"]');
+                s_lines.forEach(line => {
+                    line.classList.add('highlighted');
+                });
+                
+                const s_labels_l = document.querySelectorAll('.suggested-label-left[data-node-id="' + nodeId + '"]');
+                s_labels_l.forEach(label => {
+                    label.classList.add('highlighted');
+                });
+
+                const s_labels_r = document.querySelectorAll('.suggested-label-right[data-node-id="' + nodeId + '"]');
+                s_labels_r.forEach(label => {
+                    label.classList.add('highlighted');
+                });
+                
+            }
+
+            function unhighlightImpurityLine(nodeId) {
+                // If the node is not suggested
+                const lines = document.querySelectorAll('.impurity-line[data-node-id="' + nodeId + '"]');
+                lines.forEach(line => {
+                    line.classList.remove('highlighted');
+                });
+                
+                const labels_l = document.querySelectorAll('.impurity-label-left[data-node-id="' + nodeId + '"]');
+                labels_l.forEach(label => {
+                    label.classList.remove('highlighted');
+                });
+
+                const labels_r = document.querySelectorAll('.impurity-label-right[data-node-id="' + nodeId + '"]');
+                labels_r.forEach(label => {
+                    label.classList.remove('highlighted');
+                });
+
+                // If the node is suggested
+                const s_lines = document.querySelectorAll('.suggested-line[data-node-id="' + nodeId + '"]');
+                s_lines.forEach(line => {
+                    line.classList.remove('highlighted');
+                });
+                
+                const s_labels_l = document.querySelectorAll('.suggested-label-left[data-node-id="' + nodeId + '"]');
+                s_labels_l.forEach(label => {
+                    label.classList.remove('highlighted');
+                });
+
+                const s_labels_r = document.querySelectorAll('.suggested-label-right[data-node-id="' + nodeId + '"]');
+                s_labels_r.forEach(label => {
+                    label.classList.remove('highlighted');
+                });
+            }
+
+            function showTooltip(event, node, top, left) {
+                tooltip = document.getElementById('tooltip')
+                wh = window.screen.height
+                th = tooltip?.clientHeight
+
+                if(node.isLeaf == 1){
+                    tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels + "\nClass distribution: [" + node.distribution +  "]\nGCR: [" + node.gcr + "]\nImpurty: " + node.impurity.toFixed(3) + "\nImpurity decrease: " + node.impurity_decrement.toFixed(3) + "\nPrediction: "+ node.value;
+                } else {
+                    if(node.lift1 && node.lift2) {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nLIFT left: [" + node.lift1 + "]\nLIFT right: [" + node.lift2 + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPi: " + node.pi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3) + "\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
+                    } else {
+                        tooltip.innerText = "Id: " + node.position + "\nN: " + node.labels +  "\nClass distribution: [" + node.distribution + "]\nFeature: " + node.feature + "\nThreshold left: [" + node.treshold + "]\nGpi: " + node.gpi.toFixed(3) + "\nPi: " + node.pi.toFixed(3)  + "\nImpurty: " + node.impurity.toFixed(3) + "\nImpurity decrease: " + node.impurity_decrement.toFixed(3);
+                    }
+                }
+
+                if((top/100) + th/wh < 0.90){
+                    if(left > 50){
+                        tooltip.style.left = left + "%"
+                        tooltip.style.top = top + "%"
+                        tooltip.style.bottom = "auto"
+                        tooltip.classList.add("t_r")
+                    } else {
+                        tooltip.style.left = left + "%"
+                        tooltip.style.top = top + "%"
+                        tooltip.style.bottom = "auto"
+                        tooltip.classList.add("t_l")
+                    }
+                } else {
+                    if(left > 50){
+                        tooltip.style.left = left + "%"
+                        tooltip.style.bottom = 1 + "%"
+                        tooltip.style.top = "auto"
+                        tooltip.classList.add("t_r")
+                    } else {
+                        tooltip.style.left = left + "%"
+                        tooltip.style.bottom = 1 + "%"
+                        tooltip.style.top = "auto"
+                        tooltip.classList.add("t_l")
+                    }
+                }
+
+                tooltip.style.visibility = 'visible'
+                tooltip.style.opacity = 1
+            }
+
+            function hideTooltip() {
+                tooltip = document.getElementById('tooltip')
+                tooltip.classList.remove("t_r")
+                tooltip.classList.remove("t_l")
+                tooltip.style.visibility = 'hidden'
+                tooltip.style.opacity = 0
+            }
+
+            function getDirectChildren(nodeId) { // AGGIUNTO
+                return [2 * nodeId, 2 * nodeId + 1];
+            }
+
+            function highlightSubtree(currentImpurityDecrease) {
+                const allNodes = document.querySelectorAll('[data-node-id]');
+                const nodesToHighlight = new Set();
+                
+                allNodes.forEach(element => {
+                    const impDec = parseFloat(element.getAttribute('data-impurity-decrease'));
+                    const nodeId = parseInt(element.getAttribute('data-node-id'));
+                    
+                    if (impDec < currentImpurityDecrease) {
+                        nodesToHighlight.add(nodeId);
+                    }
+                });
+                
+                const nodesToHighlightCopy = new Set(nodesToHighlight);
+                nodesToHighlightCopy.forEach(nodeId => {
+                    const children = getDirectChildren(nodeId);
+                    children.forEach(childId => {
+                        nodesToHighlight.add(childId);
+                    });
+                });
+                
+                nodesToHighlight.forEach(nodeId => {
+                    const nodeElements = document.querySelectorAll('.node[data-node-id="' + nodeId + '"]');
+                    nodeElements.forEach(
+                        el => {
+                            el.classList.add('highlighted-node')
+
+                            // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "orange";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                        }
+                    );
+                    
+                    const leafElements = document.querySelectorAll('.leaf[data-node-id="' + nodeId + '"]');
+                    leafElements.forEach(
+                        el => {
+                            el.classList.add('highlighted-node')
+
+                            // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "orange";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                        }
+                    );
+                    
+                    const branchElements = document.querySelectorAll('.square[data-node-id="' + nodeId + '"]');
+                    branchElements.forEach(el => el.classList.add('highlighted-branch'));
+                });
+            }
+
+            function unhighlightSubtree() {
+                const highlightedNodes = document.querySelectorAll('.highlighted-node');
+                highlightedNodes.forEach(
+                    el => {
+                        el.classList.remove('highlighted-node')
+
+                        // Ridisegna il bordo del canvas in rosso
+                            const canvas = el.querySelector('canvas');
+                            if (canvas) {
+                                const ctx = canvas.getContext('2d')
+                                ctx.beginPath();
+                                ctx.arc(18, 18, 17, 0, 2 * Math.PI);
+                                ctx.strokeStyle = "blue";
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                        }
+                    );
+                    
+                const highlightedBranches = document.querySelectorAll('.highlighted-branch');
+                highlightedBranches.forEach(el => el.classList.remove('highlighted-branch'));
+            }
+
+
+            d = 80/(plotData.l_c+plotData.r_c);
+            h = 65/(plotData.max_imp_decrease);
+
+            iter(treeData, 10+d*plotData.l_c, d, h, 0)
+        </script> 
+    </body>
+    </html> 
+    
